@@ -1,0 +1,16 @@
+<svg id="hamburger" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 119 90">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fafafb;
+        stroke: #fafafb;
+        stroke-miterlimit: 10;
+        stroke-width: 10px;
+      }
+    </style>
+  </defs>
+  <title>hamburger-icon</title>
+  <line class="cls-1" y1="5" x2="119" y2="5"/>
+  <line class="cls-1" y1="45" x2="119" y2="45"/>
+  <line class="cls-1" y1="85" x2="119" y2="85"/>
+</svg>
