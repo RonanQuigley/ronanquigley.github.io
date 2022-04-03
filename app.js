@@ -49,7 +49,7 @@ const GlobalStyle = createGlobalStyle`
         font-size: 1.6rem;
     }
     p, a {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
     }
 `;
 
@@ -140,26 +140,36 @@ const CardContent = styled.div`
     width: auto;
     height: auto;
     flex-direction: column-reverse;
-    @media (min-width: 720px) {
-        flex-direction: row;
-    }
-    @media (min-width: 1200px) {
-        height: 500px;
-    }
 `;
 
 const CardImage = styled.img`
-    object-fit: cover;
-    width: 100%;
+    object-fit: contain;
     ${borderCssMixIn}
+`;
+
+const FmpCardImage = styled(CardImage)`
+    width: 70%;
+    @media (min-width: 720px) {
+        min-width: 300px;
+        width: 40%;
+    }
+    @media (min-width: 1200px) {
+        min-width: unset;
+        width: 57%;
+    }
+`;
+
+const SbCardImage = styled(CardImage)`
+    width: 100%;
 `;
 
 const CardInnerContainer = styled.div`
     padding: 0px 8px 0px 8px;
     width: 100%;
-    @media (min-width: 720px) {
-        width: 50%;
-    }
+`;
+
+const CardInnerContainerImage = styled(CardInnerContainer)`
+    text-align: center;
 `;
 
 const CardHeadingText = styled.div`
@@ -224,12 +234,12 @@ const App = () => (
                                 Take a look
                             </WhiteButton>
                         </CardInnerContainer>
-                        <CardInnerContainer>
-                            <CardImage
+                        <CardInnerContainerImage>
+                            <FmpCardImage
                                 alt="The company logo for find my past."
                                 src="./assets/fmp.jpg"
                             />
-                        </CardInnerContainer>
+                        </CardInnerContainerImage>
                     </CardContent>
                 </CardOuterContainer>
                 <CardOuterContainer colour={COLOURS.BLUE}>
@@ -249,12 +259,12 @@ const App = () => (
                                 Take a look
                             </WhiteButton>
                         </CardInnerContainer>
-                        <CardInnerContainer>
-                            <CardImage
-                                alt="screenshot taken from the PC game Glitchspace, released on Steam in 2016."
+                        <CardInnerContainerImage>
+                            <SbCardImage
+                                alt="A screenshot taken from the PC game Glitchspace, released on Steam in 2016."
                                 src="./assets/glitchspace.jpg"
                             />
-                        </CardInnerContainer>
+                        </CardInnerContainerImage>
                     </CardContent>
                 </CardOuterContainer>
             </MainContent>
