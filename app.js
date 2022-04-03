@@ -36,7 +36,6 @@ const CardOuterContainer = ({ colour, children }) => (
 const GlobalStyle = createGlobalStyle`
     body {
         background-color: ${COLOURS.BACKGROUND}; 
-        padding: 50px 0px; 
         margin: 0 auto;   
         @media (min-width: 1200px) {            
             padding: 100px;
@@ -116,7 +115,7 @@ const NavbarContainer = styled.nav`
 `;
 
 const OuterContainer = styled.div`
-    width: 90%;
+    width: 95%;
     max-width: 1280px;
     margin: 0 auto;
 `;
@@ -171,6 +170,10 @@ const CardText = styled.div`
 const HeaderSection = styled.header`
     margin: 0 auto;
     max-width: 400px;
+    padding: 24px 0;
+    @media (min-width: 1200px) {
+        padding: 0;
+    }
 `;
 
 const LatestWorkTextContainer = styled.div`
@@ -184,6 +187,8 @@ const App = () => (
             href="https://fonts.googleapis.com/css?family=Indie+Flower"
             rel="stylesheet"
         />
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <GoogleTagManager />
         <GlobalStyle />
         <OuterContainer>
