@@ -1,1 +1,0 @@
-# ronanquigley.github.io
