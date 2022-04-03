@@ -1,100 +1,80 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
 import { createGlobalStyle } from 'styled-components';
-import CVIcon from './cv-icon';
-import GithubIcon from './github-icon';
-import EmailIcon from './email-icon';
+import MainHeading from './main-heading';
+import LatestWorkText from './latest-work-text';
 
 const COLOURS = {
-    BACKGROUND: '#FFFFFA',
-    PRIMARY: '#FFF8F0',
-    SECONDARY: '#1B1B1E',
-    FONT: '#0C0C0C',
-    FONT_SECONDARY: '#FFFFFC',
+    RICH_BLACK: '#080708',
+    WHITE: '#FBFBFB',
+    INDIGO: '#323456',
+    BLUE: '#568EC5',
 };
 
-const SHADOWS = {
-    HIGH: 'box-shadow: rgb(88 43 36 / 30%) 0px 0px 20px 0px;',
-    MEDIUM: 'box-shadow: rgb(66 43 36 / 20%) 0px 0px 20px 0px;',
-    LIGHT: 'box-shadow: rgb(45 43 36 / 10%) 0px 0px 20px 0px;',
-};
+const borderCssMixIn = css`
+    border-radius: 8px;
+    box-shadow: rgb(45 43 36 / 20%) 0px 0px 20px 0px;
+`;
+
+const hoverEmphasis = css`
+    box-shadow: rgb(45 43 36 / 80%) 0px 0px 10px 0px;
+    filter: brightness(150%);
+`;
+
+const Card = ({ colour, children }) => (
+    <article
+        css={css`
+            background-color: ${colour};
+            width: 100%;
+            ${borderCssMixIn}
+        `}
+    >
+        {children}
+    </article>
+);
 
 const GlobalStyle = createGlobalStyle`
-
     body {
-        background-color: ${COLOURS.BACKGROUND};
-        font-family: 'Roboto', sans-serif;;
+        background-color: ${COLOURS.BACKGROUND};    
+        padding: 100px;   
+    }
+    body, input, textarea, button  {
+        font-family: "Indie Flower", sans-serif;
+        font-size: 62.5%;
+        font-weight: normal;
+    }
+    h2 {
+        font-size: 1.6rem;
+    }
+    p, a {
+        font-size: 1.2rem;
     }
 `;
 
-const Image = styled.img`
-    object-fit: cover;
-    width: ${(props) => props.width ?? '400px'};
-    height: ${(props) => props.height ?? '300px'};
-    border-radius: 8px;
-    ${SHADOWS.LIGHT}
-    color: magenta;
-`;
-
-const Article = styled.article`
-    display: flex;
-    flex-direction: column;
-    background-color: ${COLOURS.SECONDARY};
-    margin: 32px;
-    border-radius: 8px;
-    ${SHADOWS.MEDIUM}
-    &:hover {
-        cursor: pointer;
-        transform: scale(1.02);
-    }
-`;
-
-const Text = styled.div`
+const Button = styled.a`
+    ${borderCssMixIn}
+    border: none;
+    width: 130px;
+    height: 36px;
     text-align: center;
-`;
-
-const ImageWithLink = ({ href, alt, imgAssetPath, width, height }) => (
-    <WithLink href={href}>
-        <Image alt={alt} src={imgAssetPath} width={width} height={height} />
-    </WithLink>
-);
-
-const WorkContainer = styled.div`
-    display: block;
-    background-color: ${COLOURS.PRIMARY};
-    border-radius: 16px;
-    ${SHADOWS.HIGH}
-    @media (min-width: 600px) {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, 1fr);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    &:hover {
+        ${hoverEmphasis}
     }
 `;
 
-const WithLink = ({ href, children }) => (
-    <a
-        href={href}
-        css={css`
-            margin: 0 auto;
-            padding: 8px;
-        `}
-    >
-        {children}
-    </a>
-);
+const BlackButton = styled(Button)`
+    background-color: ${COLOURS.RICH_BLACK};
+    color: ${COLOURS.WHITE};
+`;
 
-const ArticleText = ({ children }) => (
-    <Text
-        as="p"
-        css={css`
-            width: 80%;
-            margin: 16px auto;
-            color: ${COLOURS.FONT_SECONDARY};
-            text-align: center;
-        `}
-    >
-        {children}
-    </Text>
-);
+const WhiteButton = styled(Button)`
+    background-color: ${COLOURS.WHITE};
+    color: ${COLOURS.RICH_BLACK};
+`;
 
 const GoogleTagManager = () => (
     <>
@@ -114,141 +94,157 @@ const GoogleTagManager = () => (
     </>
 );
 
+const NavbarContainer = styled.nav`
+    display: flex;
+    width: 100%;
+    max-width: 600px;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 180px;
+    align-items: center;
+    margin: 10px auto 0px;
+    @media (min-width: 720px) {
+        margin: 8px auto 24px;
+        justify-content: space-evenly;
+        flex-direction: row;
+        height: auto;
+    }
+`;
+
+const OuterContainer = styled.div`
+    max-width: 1280px;
+    margin: 0 auto;
+`;
+
+const MainContent = styled.main`
+    display: grid;
+    grid-gap: 40px;
+    @media (min-width: 1200px) {
+        grid-template-columns: 1fr 1fr;
+    }
+`;
+
+const CardContent = styled.div`
+    display: flex;
+    flex-direction: row;
+    color: ${COLOURS.WHITE};
+    width: auto;
+    padding: 30px;
+    height: 500px;
+    margin: 0 auto;
+`;
+
+const CardImage = styled.img`
+    object-fit: cover;
+    width: 100%;
+    ${borderCssMixIn}
+`;
+
+const CardLeft = styled.div`
+    width: 50%;
+    padding: 0px 8px 0px 8px;
+`;
+
+const CardRight = styled.div`
+    width: 50%;
+    padding: 0px 8px 0px 8px;
+`;
+
+const CardHeadingText = styled.div`
+    text-decoration: underline;
+`;
+
+const CardText = styled.div`
+    margin: 40px 0;
+`;
+
+const HeaderSection = styled.header`
+    margin: 0 auto;
+    width: 400px;
+`;
+
+const LatestWorkTextContainer = styled.div`
+    width: 150px;
+    margin: 40px auto;
+`;
+
 const App = () => (
     <>
-        <GoogleTagManager />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap"
+            href="https://fonts.googleapis.com/css?family=Indie+Flower"
             rel="stylesheet"
         />
+        <GoogleTagManager />
         <GlobalStyle />
-        <div
-            css={css`
-                margin: 0 auto;
-                max-width: 1280px;
-            `}
-        >
-            <header
-                css={`
-                    grid-column: 1 / span 2;
-                    margin: 40px;
-                    /* background-color: ${COLOURS.PRIMARY}; */
-                `}
-            >
-                <Text
-                    as="h1"
-                    css={css`
-                        color: ${COLOURS.FONT_PRIMARY};
-                    `}
-                >
-                    Ronan Quigley
-                </Text>
-                <Text
-                    as="h3"
-                    css={css`
-                        color: ${COLOURS.FONT_PRIMARY};
-                    `}
-                >
-                    Full Stack Developer
-                </Text>
-                <div
-                    css={css`
-                        display: flex;
-                        flex-direction: column;
-                        width: 100%;
-                        align-items: center;
-                        @media (min-width: 600px) {
-                            flex-direction: row;
-                            width: 30%;
-                            min-width: 400px;
-                            margin: 0 auto;
-                            justify-content: space-between;
-                        }
-                    `}
-                >
-                    <WithLink>
-                        <GithubIcon
-                            width="100px"
-                            height="100px"
-                            fillColour={COLOURS.FONT_PRIMARY}
-                        />
-                    </WithLink>
-                    <WithLink>
-                        <EmailIcon
-                            width="100px"
-                            height="100px"
-                            fillColour={COLOURS.FONT_PRIMARY}
-                        />
-                    </WithLink>
-                    <WithLink>
-                        <CVIcon
-                            width="100px"
-                            height="100px"
-                            fillColour={COLOURS.FONT_PRIMARY}
-                        />
-                    </WithLink>
-                </div>
-            </header>
-            <WorkContainer>
-                <Text
-                    as="h3"
-                    css={css`
-                        color: ${COLOURS.FONT};
-                        grid-column: 1 / span 2;
-                        text-decoration: underline;
-                        margin-bottom: 0;
-                    `}
-                >
-                    Latest Work
-                </Text>
-                <Article>
-                    <Text
-                        as="h4"
-                        css={css`
-                            text-decoration: underline;
-                            color: ${COLOURS.FONT_SECONDARY};
-                        `}
-                    >
-                        Findmypast
-                    </Text>
-                    <ImageWithLink
-                        imgAssetPath="./assets/fmp.jpg"
-                        href="https://findmypast.co.uk"
-                        alt="Findmypast branding; external link that to the Findmypast website"
-                    />
-                    <ArticleText as="p">
-                        I'm currently working as a full-stack software engineer
-                        at Findmypast, a family history site that provides
-                        worldwide users with access to billions of genealogy
-                        records.
-                    </ArticleText>
-                </Article>
-                <Article>
-                    <Text
-                        as="h4"
-                        css={css`
-                            text-decoration: underline;
-                            color: ${COLOURS.FONT_SECONDARY};
-                        `}
-                    >
-                        Glitchspace
-                    </Text>
-                    <ImageWithLink
-                        imgAssetPath="./assets/glitchspace.jpg"
-                        href="https://store.steampowered.com/app/290060/Glitchspace/"
-                        alt="In game screenshot of Glitchspace; external link that to the Steam store page"
-                    />
-                    <ArticleText as="p">
-                        A first-person visual programming game. Developed at
-                        Space Budgie from a previous career in games
-                        development. Winner of multiple awards, including a
-                        Scottish BAFTA.
-                    </ArticleText>
-                </Article>
-            </WorkContainer>
-        </div>
+        <OuterContainer>
+            <HeaderSection>
+                <MainHeading />
+            </HeaderSection>
+            <NavbarContainer>
+                <BlackButton href="/assets/cv.pdf">CV</BlackButton>
+                <BlackButton href="mailto:info@ronanquigley.com">
+                    Email
+                </BlackButton>
+                <BlackButton href="https://github.com/ronanquigley">
+                    Github
+                </BlackButton>
+            </NavbarContainer>
+            <LatestWorkTextContainer>
+                <LatestWorkText />
+            </LatestWorkTextContainer>
+            <MainContent>
+                <Card colour={COLOURS.INDIGO}>
+                    <CardContent>
+                        <CardLeft>
+                            <CardHeadingText as="h2">
+                                Findmypast
+                            </CardHeadingText>
+                            <CardText as="p">
+                                I&apos;m currently working as a senior software
+                                engineer on a family history product featuring
+                                billions of searchable records. I&apos;ve worked
+                                across cross-functional and self-directed teams,
+                                in both full stack and devops capacities.
+                            </CardText>
+                            <WhiteButton href="https://findmypast.co.uk/">
+                                Take a look
+                            </WhiteButton>
+                        </CardLeft>
+                        <CardRight>
+                            <CardImage
+                                alt="The company logo for find my past."
+                                src="./assets/fmp.jpg"
+                            />
+                        </CardRight>
+                    </CardContent>
+                </Card>
+                <Card colour={COLOURS.BLUE}>
+                    <CardContent>
+                        <CardLeft>
+                            <CardHeadingText as="h2">
+                                Space Budgie
+                            </CardHeadingText>
+                            <CardText as="p">
+                                I co-founded an independent games studio. Our
+                                flagship title Glitchspace, a first-person
+                                visual programming game, was developed over the
+                                course of three years. The game won multiple
+                                awards, including a Scottish BAFTA.
+                            </CardText>
+                            <WhiteButton href="https://store.steampowered.com/app/290060/Glitchspace/">
+                                Take a look
+                            </WhiteButton>
+                        </CardLeft>
+                        <CardRight>
+                            <CardImage
+                                alt="screenshot taken from the PC game Glitchspace, released on Steam in 2016."
+                                src="./assets/glitchspace.jpg"
+                            />
+                        </CardRight>
+                    </CardContent>
+                </Card>
+            </MainContent>
+        </OuterContainer>
     </>
 );
 
