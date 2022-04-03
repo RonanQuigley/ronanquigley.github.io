@@ -192,7 +192,11 @@ const App = () => (
                 <BlackButton href="mailto:info@ronanquigley.com">
                     Email
                 </BlackButton>
-                <BlackButton href="https://github.com/ronanquigley">
+                <BlackButton
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://github.com/ronanquigley"
+                >
                     Github
                 </BlackButton>
             </NavbarContainer>
@@ -213,7 +217,11 @@ const App = () => (
                                 across cross-functional and self-directed teams,
                                 in both full stack and devops capacities.
                             </CardText>
-                            <WhiteButton href="https://findmypast.co.uk/">
+                            <WhiteButton
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href="https://findmypast.co.uk/"
+                            >
                                 Take a look
                             </WhiteButton>
                         </CardInnerContainer>
@@ -238,7 +246,11 @@ const App = () => (
                                 course of three years. The game won multiple
                                 awards, including a Scottish BAFTA.
                             </CardText>
-                            <WhiteButton href="https://store.steampowered.com/app/290060/Glitchspace/">
+                            <WhiteButton
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href="https://store.steampowered.com/app/290060/Glitchspace/"
+                            >
                                 Take a look
                             </WhiteButton>
                         </CardInnerContainer>
