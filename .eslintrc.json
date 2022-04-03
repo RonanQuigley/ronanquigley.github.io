@@ -1,0 +1,17 @@
+{
+    "extends": ["eslint:recommended", "plugin:react/recommended"],
+    "rules": {
+        "semi": ["error", "always"],
+        "quotes": ["error", "single"],
+        "react/prop-types": 0
+    },
+    "parserOptions": {
+        "ecmaVersion": 2020,
+        "sourceType": "module"
+    },
+    "env": {
+        "browser": true,
+        "node": true,
+        "es6": true
+    }
+}
