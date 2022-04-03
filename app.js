@@ -38,7 +38,13 @@ const GlobalStyle = createGlobalStyle`
         background-color: ${COLOURS.BACKGROUND}; 
         margin: 0 auto;   
         padding: 0;
-    
+        @font-face {
+          font-family: 'Indie Flower';
+          font-style: normal;
+          font-weight: 400;
+          src: url(https://fonts.gstatic.com/s/indieflower/v16/m8JVjfNVeKWVnh3QMuKkFcZVaUuH99GUDg.woff2) format('woff2');
+          unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }        
     }
     body, input, textarea, button  {
         font-family: "Indie Flower", sans-serif;
@@ -82,16 +88,15 @@ const GoogleTagManager = () => (
     <>
         <script
             async
-            src="https://www.googletagmanager.com/gtag/js?id=UA-82512705-1"
-        ></script>
-        <script
-            dangerouslySetInnerHTML={{
-                __html: `window.dataLayer = window.dataLayer || [];
-                        function gtag() { dataLayer.push(arguments); }
-                        gtag('js', new Date());
-                        gtag('config', 'UA-82512705-1');
-                    `,
+            onLoad={function () {
+                window.dataLayer = window.dataLayer || [];
+                function gtag() {
+                    window.dataLayer.push(arguments);
+                }
+                gtag('js', new Date());
+                gtag('config', 'UA-82512705-1');
             }}
+            src="https://www.googletagmanager.com/gtag/js?id=UA-82512705-1"
         />
     </>
 );
@@ -192,10 +197,6 @@ const LatestWorkTextContainer = styled.div`
 
 const App = () => (
     <>
-        <link
-            href="https://fonts.googleapis.com/css?family=Indie+Flower"
-            rel="stylesheet"
-        />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <GoogleTagManager />
