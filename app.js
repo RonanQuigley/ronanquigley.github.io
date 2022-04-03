@@ -181,7 +181,7 @@ const App = () => (
                 <MainHeading />
             </HeaderSection>
             <NavbarContainer>
-                <BlackButton href="/assets/cv.pdf">CV</BlackButton>
+                <BlackButton href="./assets/cv.pdf">CV</BlackButton>
                 <BlackButton href="mailto:info@ronanquigley.com">
                     Email
                 </BlackButton>

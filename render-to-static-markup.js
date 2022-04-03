@@ -1,7 +1,7 @@
 import React from 'react';
 import fs from 'fs';
 import ReactDOM from 'react-dom/server';
-import App from './src/app';
+import App from './app';
 import { ServerStyleSheet } from 'styled-components';
 import { minify } from 'html-minifier';
 
