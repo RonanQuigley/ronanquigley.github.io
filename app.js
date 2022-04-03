@@ -37,9 +37,8 @@ const GlobalStyle = createGlobalStyle`
     body {
         background-color: ${COLOURS.BACKGROUND}; 
         margin: 0 auto;   
-        @media (min-width: 1200px) {            
-            padding: 100px;
-        }   
+        padding: 0;
+    
     }
     body, input, textarea, button  {
         font-family: "Indie Flower", sans-serif;
@@ -115,9 +114,13 @@ const NavbarContainer = styled.nav`
 `;
 
 const OuterContainer = styled.div`
-    width: 95%;
+    width: 90%;
     max-width: 1280px;
     margin: 0 auto;
+    padding: 24px 0px;
+    @media (min-width: 1200px) {
+        padding: 50px 0px 0px;
+    }
 `;
 
 const MainContent = styled.main`
@@ -170,10 +173,6 @@ const CardText = styled.div`
 const HeaderSection = styled.header`
     margin: 0 auto;
     max-width: 400px;
-    padding: 24px 0;
-    @media (min-width: 1200px) {
-        padding: 0;
-    }
 `;
 
 const LatestWorkTextContainer = styled.div`
