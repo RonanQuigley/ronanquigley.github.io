@@ -21,7 +21,7 @@ const hoverEmphasis = css`
     filter: brightness(150%);
 `;
 
-const Card = ({ colour, children }) => (
+const CardOuterContainer = ({ colour, children }) => (
     <article
         css={css`
             background-color: ${colour};
@@ -35,8 +35,12 @@ const Card = ({ colour, children }) => (
 
 const GlobalStyle = createGlobalStyle`
     body {
-        background-color: ${COLOURS.BACKGROUND};    
-        padding: 100px;   
+        background-color: ${COLOURS.BACKGROUND}; 
+        padding: 50px 0px; 
+        margin: 0 auto;   
+        @media (min-width: 1200px) {            
+            padding: 100px;
+        }   
     }
     body, input, textarea, button  {
         font-family: "Indie Flower", sans-serif;
@@ -112,6 +116,7 @@ const NavbarContainer = styled.nav`
 `;
 
 const OuterContainer = styled.div`
+    width: 90%;
     max-width: 1280px;
     margin: 0 auto;
 `;
@@ -119,6 +124,7 @@ const OuterContainer = styled.div`
 const MainContent = styled.main`
     display: grid;
     grid-gap: 40px;
+    margin: 0 auto;
     @media (min-width: 1200px) {
         grid-template-columns: 1fr 1fr;
     }
@@ -126,12 +132,18 @@ const MainContent = styled.main`
 
 const CardContent = styled.div`
     display: flex;
-    flex-direction: row;
     color: ${COLOURS.WHITE};
-    width: auto;
     padding: 30px;
-    height: 500px;
     margin: 0 auto;
+    width: auto;
+    height: auto;
+    flex-direction: column-reverse;
+    @media (min-width: 720px) {
+        flex-direction: row;
+    }
+    @media (min-width: 1200px) {
+        height: 500px;
+    }
 `;
 
 const CardImage = styled.img`
@@ -140,14 +152,12 @@ const CardImage = styled.img`
     ${borderCssMixIn}
 `;
 
-const CardLeft = styled.div`
-    width: 50%;
+const CardInnerContainer = styled.div`
     padding: 0px 8px 0px 8px;
-`;
-
-const CardRight = styled.div`
-    width: 50%;
-    padding: 0px 8px 0px 8px;
+    width: 100%;
+    @media (min-width: 720px) {
+        width: 50%;
+    }
 `;
 
 const CardHeadingText = styled.div`
@@ -160,7 +170,7 @@ const CardText = styled.div`
 
 const HeaderSection = styled.header`
     margin: 0 auto;
-    width: 400px;
+    max-width: 400px;
 `;
 
 const LatestWorkTextContainer = styled.div`
@@ -193,9 +203,9 @@ const App = () => (
                 <LatestWorkText />
             </LatestWorkTextContainer>
             <MainContent>
-                <Card colour={COLOURS.INDIGO}>
+                <CardOuterContainer colour={COLOURS.INDIGO}>
                     <CardContent>
-                        <CardLeft>
+                        <CardInnerContainer>
                             <CardHeadingText as="h2">
                                 Findmypast
                             </CardHeadingText>
@@ -209,18 +219,18 @@ const App = () => (
                             <WhiteButton href="https://findmypast.co.uk/">
                                 Take a look
                             </WhiteButton>
-                        </CardLeft>
-                        <CardRight>
+                        </CardInnerContainer>
+                        <CardInnerContainer>
                             <CardImage
                                 alt="The company logo for find my past."
                                 src="./assets/fmp.jpg"
                             />
-                        </CardRight>
+                        </CardInnerContainer>
                     </CardContent>
-                </Card>
-                <Card colour={COLOURS.BLUE}>
+                </CardOuterContainer>
+                <CardOuterContainer colour={COLOURS.BLUE}>
                     <CardContent>
-                        <CardLeft>
+                        <CardInnerContainer>
                             <CardHeadingText as="h2">
                                 Space Budgie
                             </CardHeadingText>
@@ -234,15 +244,15 @@ const App = () => (
                             <WhiteButton href="https://store.steampowered.com/app/290060/Glitchspace/">
                                 Take a look
                             </WhiteButton>
-                        </CardLeft>
-                        <CardRight>
+                        </CardInnerContainer>
+                        <CardInnerContainer>
                             <CardImage
                                 alt="screenshot taken from the PC game Glitchspace, released on Steam in 2016."
                                 src="./assets/glitchspace.jpg"
                             />
-                        </CardRight>
+                        </CardInnerContainer>
                     </CardContent>
-                </Card>
+                </CardOuterContainer>
             </MainContent>
         </OuterContainer>
     </>

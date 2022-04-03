@@ -29,7 +29,7 @@
         "react-refresh": "^0.9.0"
     },
     "scripts": {
-        "start": "webpack serve",
+        "start": "webpack serve --entry ./index.js",
         "build": "cross-env NODE_ENV=BUILD node -r @babel/register ./render-to-static-markup"
     },
     "repository": {
