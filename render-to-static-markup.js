@@ -15,6 +15,7 @@ try {
         <html lang="en-GB">
             <head>
                 <title>Ronan Quigley</title>
+                <link rel="icon" type="image/x-icon" href="/favicon.ico">
                 ${styleTags}
             </head>
             <body>
