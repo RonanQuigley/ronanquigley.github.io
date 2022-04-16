@@ -12,8 +12,9 @@ try {
     const styleTags = sheet.getStyleTags();
     const html = minify(
         `
-        <html>
+        <html lang="en-GB">
             <head>
+                <title>Ronan Quigley</title>
                 ${styleTags}
             </head>
             <body>
