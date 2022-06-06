@@ -8,5 +8,5 @@
         } catch (error) {
             console.error('Could not setup email href: ', error);
         }
-    }, 500);
+    }, 1000);
 })();
