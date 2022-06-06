@@ -14,6 +14,7 @@ try {
         `
         <html lang="en-GB">
             <head>
+             
                 <title>Ronan Quigley</title>
                 <link rel="icon" type="image/x-icon" href="./favicon.ico">
                 ${styleTags}
@@ -22,6 +23,7 @@ try {
                 <div id="root">
                     ${markup}
                 </div>
+                <script src="./assets/deobfuscate.js"></script>
             </body>
         </html>
     `,

@@ -189,9 +189,8 @@ const App = () => (
             </HeaderSection>
             <NavbarContainer>
                 <BlackButton href="./assets/cv.pdf">CV</BlackButton>
-                <BlackButton href="mailto:info@ronanquigley.com">
-                    Email
-                </BlackButton>
+                {/** do not add the href tag to prevent spam */}
+                <BlackButton id="email">Email</BlackButton>
                 <BlackButton
                     target="_blank"
                     rel="noopener noreferrer"
