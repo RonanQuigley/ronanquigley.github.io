@@ -13,10 +13,11 @@ try {
     const html = minify(
         `
         <html lang="en-GB">
-            <head>
-             
-                <title>Ronan Quigley</title>
+            <head>             
+                <title>Ronan Quigley - Software Engineer</title>
                 <link rel="icon" type="image/x-icon" href="./favicon.ico">
+                <meta charSet="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
                 ${styleTags}
             </head>
             <body>
