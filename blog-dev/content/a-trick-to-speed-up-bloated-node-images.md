@@ -1,64 +1,64 @@
 ---
-title: "A trick to speed up and slim down bloated Node images"
+title: 'A trick to speed up and slim down bloated Node images'
 date: 2024-02-24T14:13:34Z
-draft: true
+draft: false
 tags:
-  - Docker
-  - Node
-  - NPM
-  - CI
-  - JavaScript
-  - TIL
-description: "Optimize Node.js images by reducing the file count of node modules. Lots of tiny files cripples disk I/O which slows down docker commands."
+    - Docker
+    - Node
+    - NPM
+    - CI
+    - JavaScript
+    - TIL
+description: 'Optimize Node.js images by reducing the file count of node modules. Lots of tiny files cripples disk I/O which slows down docker commands.'
 keywords:
-  - Node.js
-  - Docker
-  - File Bloat
-  - Node Images
-  - NPM
-  - JavaScript
-  - CI Optimization
-  - Docker Layers
-  - Dockerfile
-  - Node Modules
-  - Buildkit
-  - I/O Performance
-  - CI/CD
-  - Deployment
-  - Build Performance
-  - Code Efficiency
-  - Plug'n'Play
-  - Yarn
-  - pnpm
-  - Dependency Management
-  - Vanilla JavaScript
-  - TypeScript
-  - Source Maps
-  - Editorconfig
-  - Linting
-  - Bash Scripting
-  - Filesystem Cleanup
-  - Legal Compliance
-  - License Agreements
-  - Software Distribution
-  - Single Executable
-  - Node LTS
-  - Third-party Dependencies
-  - Performance Gains
-  - Monolithic Repositories
-  - Application Size Reduction
-  - Build Cache
-  - Docker Image Optimization
-  - Docker Pull
-  - Docker Image Load
-  - Docker Image History
-  - Docker Build Phase
-  - Docker Multi-Stage Build
-  - License Files
-  - Binary Languages
-  - File Extension Analysis
-  - File Count Reduction
-  - Docker Image Retrieval
+    - Node.js
+    - Docker
+    - File Bloat
+    - Node Images
+    - NPM
+    - JavaScript
+    - CI Optimization
+    - Docker Layers
+    - Dockerfile
+    - Node Modules
+    - Buildkit
+    - I/O Performance
+    - CI/CD
+    - Deployment
+    - Build Performance
+    - Code Efficiency
+    - Plug'n'Play
+    - Yarn
+    - pnpm
+    - Dependency Management
+    - Vanilla JavaScript
+    - TypeScript
+    - Source Maps
+    - Editorconfig
+    - Linting
+    - Bash Scripting
+    - Filesystem Cleanup
+    - Legal Compliance
+    - License Agreements
+    - Software Distribution
+    - Single Executable
+    - Node LTS
+    - Third-party Dependencies
+    - Performance Gains
+    - Monolithic Repositories
+    - Application Size Reduction
+    - Build Cache
+    - Docker Image Optimization
+    - Docker Pull
+    - Docker Image Load
+    - Docker Image History
+    - Docker Build Phase
+    - Docker Multi-Stage Build
+    - License Files
+    - Binary Languages
+    - File Extension Analysis
+    - File Count Reduction
+    - Docker Image Retrieval
 ---
 
 # Disclaimer
