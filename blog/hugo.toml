@@ -1,0 +1,13 @@
+baseURL = 'https://ronanquigley.com/blog'
+languageCode = 'en-uk'
+theme = "hugo-theme-monochrome"
+title = "Weblog"
+googleAnalytics = "G-0JGT8T2T20"
+[[menu.navbar]]
+identifier = "home"
+name = "home"
+title = "home"
+url = "/"
+weight = 100
+[params]
+color_scheme = "dark" 

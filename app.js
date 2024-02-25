@@ -196,6 +196,7 @@ const App = () => (
                 >
                     Github
                 </BlackButton>
+                <BlackButton href="/blog">Blog</BlackButton>
             </NavbarContainer>
             <LatestWorkTextContainer>
                 <LatestWorkText />
