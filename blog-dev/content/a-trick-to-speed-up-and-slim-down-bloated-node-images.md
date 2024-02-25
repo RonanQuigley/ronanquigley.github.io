@@ -71,7 +71,7 @@ Secondly, your mileage may vary with this trick. For anecdotal evidence, in one 
 
 If you use Docker and are stuck with a large e.g. 1GB+ project shipping with a "classic" `node_modules` directory then, unless you're extremely disciplined about dependncies, you'll run into this problem:
 
-![loading a bloated Node image with docker image load](/images/loading-image.gif)
+![loading a bloated Node image with docker image load](/blog/images/loading-image.gif)
 
 When a node modules folder is installed via a Dockerfile, it will produce a single docker layer. That layer has to be extracted to disk on a docker pull and it will also have to be exported from buildkit after the build phase has completed. Having to negotiate with a disk for lots of tiny files hurts I/O. This in turns slows down your docker image creation/retrieval commands.
 In CI systems, with a cache bust this will also cause slowdown in your build chain e.g. slower deployment steps due to a longer pull/exctraction time.
