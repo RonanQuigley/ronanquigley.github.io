@@ -138,4 +138,4 @@ I'm not a lawyer, but I do know there's at least one legal thing worth calling o
 
 Therefore, for projects that are published in some shape or form I would just ship the license agreements.
 
-Alternatively use a separate build phase e.g. another Dockerfile to retrieve all of the license agreements. That way you can still provide them as part of licenses section on your site.
+Alternatively use a separate build phase e.g. another Dockerfile to retrieve all of the license agreements. That way you can still provide them as part of a licenses section/page on your site.
