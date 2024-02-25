@@ -85,8 +85,8 @@ If we take the most basic Dockerfile to illustrate this:
 FROM node:20-slim
 
 COPY package.json package-lock.json .
-RUN npm i --omit=dev
 
+RUN npm i --omit=dev
 ...
 ```
 
