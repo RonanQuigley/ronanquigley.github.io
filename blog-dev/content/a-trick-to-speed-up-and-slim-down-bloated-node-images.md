@@ -98,7 +98,7 @@ FROM node:20-slim
 COPY package.json package-lock.json .
 
 # repurpose to your needs, for example, I don't use use TypeScript so I don't need ts or d.ts files
-# but if you build a typesecript app you'll need them. I'm also not worried about source map files from third party libraries
+# but if you build a typescript app you'll need them. I'm also not worried about source map files from third party libraries
 RUN npm i --omit=dev && find ./node_modules -type f \( -iname "*.md" -o -iname "*.yaml" -o -iname "*.txt" -o -iname ".nycrc" -o -iname "*.d.*" -o -iname "*.flow" -o -iname "*.ts" -o -iname "*.map" -o -iname "*.yml" -o -iname "*.yaml" -o -iname "*.eslintrc" -o -iname "*.npmignore" -o -iname "*.editorconfig" \) -delete
 ...
 ```
