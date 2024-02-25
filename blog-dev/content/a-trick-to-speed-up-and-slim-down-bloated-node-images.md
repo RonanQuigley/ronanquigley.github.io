@@ -120,7 +120,7 @@ find . -type f | wc -l
 find . -type f | sed -n 's/.*\.\(.*\)/\1/p' | sort | uniq -c | sort -n
 ```
 
-It's frustrating that I have to do this in the first place just to try and mitigate for dependency bloat. For personal projects I've moved away from Node to languages that ship as single binary to avoid this problem altogether.
+It's frustrating that I have to do this in the first place just to try and mitigate for dependency bloat. For personal projects I've moved away from Node to languages that ship as a single binary to avoid this problem altogether.
 
 ## Other options
 
