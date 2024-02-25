@@ -7,7 +7,7 @@ googleAnalytics = "G-0JGT8T2T20"
 identifier = "home"
 name = "home"
 title = "home"
-url = "/"
+url = "https://ronanquigley.com"
 weight = 100
 [params]
 color_scheme = "dark" 
