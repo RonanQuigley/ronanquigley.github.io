@@ -63,7 +63,7 @@ keywords:
 
 # Disclaimer
 
-Before reading, you should **only** need to do this if you cannot use Plug and Play (PnP) from either yarn or pnpm. PnP does not have this issue as it loads modules that are stored as zip files. A single module that is zipped is just 1 file vs potentially 10s if not 100s of 1000s of files coming from each of your dependencies of dependencies of dependencies etc. etc.
+Before reading, you should **only** need to do this if you cannot use Plug and Play (PnP) from either [yarn](https://yarnpkg.com/features/pnp) or [pnpm](https://pnpm.io/blog/2020/10/17/node-modules-configuration-options-with-pnpm#plugnplay-the-strictest-configuration). PnP does not have this issue as it loads modules that are stored as zip files. A single module that is zipped is just 1 file vs potentially 10s if not 100s of 1000s of files coming from each of your dependencies of dependencies of dependencies etc. etc.
 
 Secondly, your mileage may vary with this trick. For anecdotal evidence, in one project that I worked on, this change yielded a 5-10 minute overall gain in CI. Monolithic repos will see a win, but for tiny node apps the impact is likely to be negligible.
 
