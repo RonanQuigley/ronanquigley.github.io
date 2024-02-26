@@ -18,7 +18,15 @@ try {
                 <link rel="icon" type="image/x-icon" href="./favicon.ico">
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <script async src="https://www.googletagmanager.com/gtag/js?id=G-0JGT8T2T20"></script>
+                <!-- Google tag (gtag.js) -->
+                <script async src="https://www.googletagmanager.com/gtag/js?id=G-N5SBRCG7YQ"></script>
+                <script>
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                
+                  gtag('config', 'G-N5SBRCG7YQ');
+                </script>                
                 ${styleTags}
             </head>
             <body>
