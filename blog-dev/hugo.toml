@@ -2,7 +2,6 @@ baseURL = 'https://ronanquigley.com/blog'
 languageCode = 'en-uk'
 theme = "hugo-theme-monochrome"
 title = "Weblog"
-googleAnalytics = "G-N5SBRCG7YQ"
 [[menu.navbar]]
 identifier = "home"
 name = "home"

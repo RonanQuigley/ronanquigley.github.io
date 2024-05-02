@@ -1,4 +1,3 @@
 User-agent: *
-Disallow:
-
-Sitemap: https://www.ronanquigley.com/blog/sitemap.xml
+Disallow: /assets/
+Sitemap: https://www.ronanquigley.com/sitemap.xml
