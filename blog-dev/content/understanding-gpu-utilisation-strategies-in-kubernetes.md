@@ -24,7 +24,7 @@ keywords:
     - GPU utilization strategies
 ---
 
-# GPU Utilisation Strategies
+# Understanding GPU utilization strategies in Kubernetes
 
 These notes are aimed at anyone that wants to setup Nvidia GPU utilisation strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I'm also focusing on a high level ELI5, using the knowledge I've gained so far on the subject, of:
 
