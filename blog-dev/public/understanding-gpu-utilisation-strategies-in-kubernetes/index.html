@@ -1,0 +1,878 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang='en-uk'><head><script src="/blog/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=blog/livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href='http://localhost:1313/blog/favicon.ico' type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Understanding GPU utilization strategies in Kubernetes - Weblog</title>
+
+    
+    <meta name="description" content="Explore GPU utilization strategies in Kubernetes, focusing on Multi-Instance GPUs (MIG), Multi-Process Service (MPS), and Time Slicing." />
+    
+
+    
+    <meta name="keywords" content="Nvidia,GPU,Nvidia Device Plugin,Kubernetes,Multi-instance GPUs,MIG setup k8s,CUDA applications in k8s,MPS (Multi-Process Service),Memory limits on GPU processes,MPS daemon setup in k8s,DCGM metrics exporter,CUDA device properties,VRAM allocation in pods,GPU utilization strategies" />
+    
+
+    
+
+    
+        <meta property="og:title" content="Understanding GPU utilization strategies in Kubernetes" />
+<meta property="og:description" content="Explore GPU utilization strategies in Kubernetes, focusing on Multi-Instance GPUs (MIG), Multi-Process Service (MPS), and Time Slicing." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://localhost:1313/blog/understanding-gpu-utilisation-strategies-in-kubernetes/" /><meta property="article:section" content="" />
+<meta property="article:published_time" content="2024-06-11T14:13:34+00:00" />
+<meta property="article:modified_time" content="2024-06-11T14:13:34+00:00" />
+
+
+    
+
+    
+        <meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Understanding GPU utilization strategies in Kubernetes"/>
+<meta name="twitter:description" content="Explore GPU utilization strategies in Kubernetes, focusing on Multi-Instance GPUs (MIG), Multi-Process Service (MPS), and Time Slicing."/>
+
+    <link rel="stylesheet" href="/blog/style.css" integrity="">
+
+
+
+
+
+    
+    <script>
+        if (!('theme' in localStorage)) {
+            localStorage.theme = 'dark';
+        }
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute("data-theme", "dark");
+        } else {
+            document.documentElement.setAttribute("data-theme", "light");
+        }
+    </script>
+<script defer src="/blog/js/header.js" integrity=""></script>
+
+
+
+    <script defer src="/blog/js/zooming.js" integrity=""></script>
+
+
+
+
+
+
+
+    
+        
+        
+            <script defer src="/blog/js/builtin-copy.js" integrity=""></script>
+        
+    
+
+
+
+
+
+
+
+</head>
+<body>
+        <main><header>
+    <div class="brand">
+        <div id="sidebar_btn">
+            <svg id="menu_icon" width="26px" height="26px" viewBox="0 0 24 24">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24" height="24" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+</svg>
+
+</svg>
+        </div>
+
+        <div>
+            <a href="/blog/">Weblog</a>
+        </div>
+    </div>
+
+    <div class="toolbox">
+        <div id="theme_tool">
+            <svg id="dark_mode_btn" class="toolbox-btn" width="18px" height="18px" viewBox="0 0 24 24">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24" height="24" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+</svg>
+
+</svg>
+            <svg id="light_mode_btn" class="toolbox-btn" width="18px" height="18px" viewBox="0 0 24 24">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24" height="24" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+</svg>
+
+</svg>
+        </div>
+
+        
+
+        
+    </div>
+</header>
+<nav id="navbar" class="pure-menu">
+    <ul class="pure-menu-list"><li class="navbar-item pure-menu-item ">
+                    
+                        <a href="https://ronanquigley.com" class="pure-menu-link">home</a>
+                    
+                </li></ul>
+</nav>
+<div id="sidebar_canvas_overlay" class="hidden"></div>
+<div id="sidebar" class="close">
+    <ul><li>
+                    <a href="https://ronanquigley.com">home</a>
+                </li></ul>
+</div><div id="content" class="content-margin">
+                
+    
+    <div class="collapsible-menu-wrapper"><div class="collapsible-menu-type"><span>Table of contents</span></div><div class="collapsible-menu">
+        
+            <nav id="TableOfContents">
+  <ul>
+    <li><a href="#initial-setup">Initial Setup</a></li>
+    <li><a href="#test-deployment">Test Deployment</a></li>
+    <li><a href="#compute-modes">Compute Modes</a></li>
+    <li><a href="#vanilla-configuration">Vanilla Configuration</a></li>
+    <li><a href="#strategies">Strategies</a>
+      <ul>
+        <li><a href="#time-slicing">Time Slicing</a></li>
+        <li><a href="#mig">Mig</a></li>
+        <li><a href="#mps">MPS</a></li>
+        <li><a href="#selecting-multiple">Selecting Multiple</a></li>
+      </ul>
+    </li>
+    <li><a href="#whats-next">What&rsquo;s next</a></li>
+  </ul>
+</nav>
+        
+    </div></div>
+
+
+
+    <div class="content-margin">
+
+
+
+<article class="line-numbers">
+    
+    
+    <h1 id="gpu-utilisation-strategies">GPU Utilisation Strategies</h1>
+<p>These notes are aimed at anyone that wants to setup Nvidia GPU utilisation strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I&rsquo;m also focusing on a high level ELI5, using the knowledge I&rsquo;ve gained so far on the subject, of:</p>
+<ul>
+<li>MIG (Multi-Instance GPUs)</li>
+<li>MPS (Multi-process service)</li>
+<li>Time Slicing</li>
+</ul>
+<p>I used two Nvidia cards to put these notes together:</p>
+<ul>
+<li>A100</li>
+<li>LS40</li>
+</ul>
+<p>There&rsquo;s still gaps in my understanding of how these strategies work and when to employ them, but this should get people to a point where they can start tinkering with them.</p>
+<h2 id="initial-setup">Initial Setup</h2>
+<p>I&rsquo;ll assume <a href="https://github.com/NVIDIA/k8s-device-plugin">nvidia&rsquo;s device plugin</a> for k8s has been installed. If not, go do that first. I used helm chart version <code>0.15</code> for putting together these notes. Also, make sure you have the following setup on your worker node:</p>
+<ul>
+<li>NVIDIA drivers ~= 384.81 (I used 550.54.14-1)</li>
+<li>nvidia-docker &gt;= 2.0 || nvidia-container-toolkit &gt;= 1.7.0 (&gt;= 1.11.0 to use integrated GPUs on Tegra-based systems)</li>
+<li>nvidia-container-runtime configured as the default low-level runtime</li>
+<li>Kubernetes version &gt;= 1.10</li>
+</ul>
+<h2 id="test-deployment">Test Deployment</h2>
+<p>To test each strategy, we have a dummy deployment for inducing some sort of load on the GPU. The python code doesn&rsquo;t really matter here, you can use anything so long as it taxes the GPU&rsquo;s framebuffer and/or stream multi-processors (SMs).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># stress.py</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.nn <span style="color:#66d9ef">as</span> nn
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.optim <span style="color:#66d9ef">as</span> optim
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torchvision <span style="color:#f92672">import</span> models
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Set device to GPU if available</span>
+</span></span><span style="display:flex;"><span>device <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#34;cuda&#34;</span> <span style="color:#66d9ef">if</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available() <span style="color:#66d9ef">else</span> <span style="color:#e6db74">&#34;cpu&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Define a simple model</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">SimpleModel</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self):
+</span></span><span style="display:flex;"><span>        super(SimpleModel, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Conv2d(<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">64</span>, kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>, stride<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, padding<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Conv2d(<span style="color:#ae81ff">64</span>, <span style="color:#ae81ff">128</span>, kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>, stride<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, padding<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv3 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Conv2d(<span style="color:#ae81ff">128</span>, <span style="color:#ae81ff">256</span>, kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>, stride<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, padding<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>fc1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">256</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">16</span>, <span style="color:#ae81ff">1024</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>fc2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">1024</span>, <span style="color:#ae81ff">10</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>relu <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>ReLU()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>maxpool <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>MaxPool2d(kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>, stride<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>relu(self<span style="color:#f92672">.</span>conv1(x))
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>maxpool(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>relu(self<span style="color:#f92672">.</span>conv2(x))
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>maxpool(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>relu(self<span style="color:#f92672">.</span>conv3(x))
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>maxpool(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>view(x<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>), <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>relu(self<span style="color:#f92672">.</span>fc1(x))
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>fc2(x)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>model <span style="color:#f92672">=</span> SimpleModel()<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Create random input data</span>
+</span></span><span style="display:flex;"><span>input_data <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>randn(<span style="color:#ae81ff">64</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">128</span>, <span style="color:#ae81ff">128</span>)<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Define a loss function and optimizer</span>
+</span></span><span style="display:flex;"><span>criterion <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>CrossEntropyLoss()
+</span></span><span style="display:flex;"><span>optimizer <span style="color:#f92672">=</span> optim<span style="color:#f92672">.</span>Adam(model<span style="color:#f92672">.</span>parameters(), lr<span style="color:#f92672">=</span><span style="color:#ae81ff">0.001</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Run an infinite loop to stress the GPU</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
+</span></span><span style="display:flex;"><span>    optimizer<span style="color:#f92672">.</span>zero_grad()
+</span></span><span style="display:flex;"><span>    output <span style="color:#f92672">=</span> model(input_data)
+</span></span><span style="display:flex;"><span>    target <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>randint(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">10</span>, (<span style="color:#ae81ff">64</span>,))<span style="color:#f92672">.</span>to(device)  <span style="color:#75715e"># Random target</span>
+</span></span><span style="display:flex;"><span>    loss <span style="color:#f92672">=</span> criterion(output, target)
+</span></span><span style="display:flex;"><span>    loss<span style="color:#f92672">.</span>backward()
+</span></span><span style="display:flex;"><span>    optimizer<span style="color:#f92672">.</span>step()
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Loss: </span><span style="color:#e6db74">{</span>loss<span style="color:#f92672">.</span>item()<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span></code></pre></div><p>And an accompanying Dockerfile:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-Dockerfile" data-lang="Dockerfile"><span style="display:flex;"><span><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> pytorch/pytorch:latest</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">WORKDIR</span><span style="color:#e6db74"> /app</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> pip install torchvision<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> stress.py stress.py<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">CMD</span> [<span style="color:#e6db74">&#34;python&#34;</span>, <span style="color:#e6db74">&#34;stress.py&#34;</span>]<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>With a deployment manifest to run our cuda application:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">strategy</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">type</span>: <span style="color:#ae81ff">Recreate</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">nodeName</span>: <span style="color:#ae81ff">&lt;gpu_worker_node&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">containers</span>:
+</span></span><span style="display:flex;"><span>                - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-test</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">image</span>: <span style="color:#ae81ff">&lt;gpu_stress_image&gt;</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">imagePullPolicy</span>: <span style="color:#ae81ff">Always</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>                      <span style="color:#f92672">limits</span>:
+</span></span><span style="display:flex;"><span>                          <span style="color:#f92672">nvidia.com/gpu</span>: <span style="color:#ae81ff">1</span>
+</span></span></code></pre></div><h2 id="compute-modes">Compute Modes</h2>
+<p>Before deliving into each utilisation strategy, we need to touch on Nvidia&rsquo;s system management interface, <code>nvidia-smi</code>.</p>
+<p>Specifically we need to talk about a certain flag named <code>compute-mode</code> as it will become relevant later in this post. I&rsquo;ve quoted their <a href="https://developer.download.nvidia.com/compute/DCGM/docs/nvidia-smi-367.38.pdf">cli docs</a> to explain what it means:</p>
+<blockquote>
+<p>The compute mode flag indicates whether individual or multiple compute
+applications may run on the GPU.</p>
+<ul>
+<li>
+<p>&ldquo;Default&rdquo; means multiple contexts are allowed per device.</p>
+</li>
+<li>
+<p>&ldquo;Exclusive Process&rdquo; means only one context is allowed per device,
+usable from multiple threads at a time.</p>
+</li>
+<li>
+<p>&ldquo;Prohibited&rdquo; means no contexts are allowed per device (no compute
+apps).</p>
+</li>
+</ul>
+</blockquote>
+<p>As we&rsquo;ll see later, the compute mode will change depending on the GPU utilisation strategy.</p>
+<h2 id="vanilla-configuration">Vanilla Configuration</h2>
+<p>I don&rsquo;t know exactly what to call this. It&rsquo;s just using nvidia&rsquo;s default compute mode. This means that you can have as many CUDA contexts i.e. applications as you want talking to one GPU.</p>
+<p>Secondly, I struggled to find any documentation on how this mode actually works under the hood. I did come across this <a href="https://stackoverflow.com/questions/31643570/running-more-than-one-cuda-applications-on-one-gpu/31643688#31643688">stackoverflow</a> post that says the following, but I&rsquo;m unsure if it still applies in 2024:</p>
+<blockquote>
+<p>CUDA activity from independent host processes will normally create independent CUDA contexts, one for each process. Thus, the CUDA activity launched from separate host processes will take place in separate CUDA contexts, on the same device.</p>
+<p>CUDA activity in separate contexts will be serialized. The GPU will execute the activity from one process, and when that activity is idle, it can and will context-switch to another context to &gt; complete the CUDA activity launched from the other process.</p>
+</blockquote>
+<p>With nvidia&rsquo;s device plugin installed, we can get a pod to request a GPU by applying the following to its manifest:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">limits</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">nvidia.com/gpu</span>: <span style="color:#ae81ff">1</span>
+</span></span></code></pre></div><p>However, this is unusable in concurrent setups that have one GPU per worker node because any other pod that requests a GPU will <strong>not</strong> be able to run due to the following sort of error:</p>
+<pre tabindex="0"><code>Message:          Pod was rejected: Allocate failed due to requested number of devices unavailable for nvidia.com/gpu. Requested: 1, Available: 0, which is unexpected
+...
+
+Events:
+Type Reason Age From Message
+
+---
+
+Warning UnexpectedAdmissionError 11s kubelet Allocate failed due to requested number of devices unavailable for nvidia.com/gpu. Requested: 1, Available: 0, which is unexpected
+</code></pre><p>To fix this, we can actually just remove the resources option i.e. specify no limits or requests. We now get replicas:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">strategy</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">type</span>: <span style="color:#ae81ff">Recreate</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">nodeName</span>: <span style="color:#ae81ff">&lt;gpu_worker_node&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">containers</span>:
+</span></span><span style="display:flex;"><span>                - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-test</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">image</span>: <span style="color:#ae81ff">&lt;gpu_stress_image&gt;</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">imagePullPolicy</span>: <span style="color:#ae81ff">Always</span>
+</span></span></code></pre></div><p><img src="/blog/images/two-replicas.png" alt="two-replicas"></p>
+<p>By exec&rsquo;ing into each pod, you can see from cuda&rsquo;s point of view, each pod thinks it has access to all GPU hardware:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>get_device_properties(torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#34;cuda&#34;</span>))
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># _CudaDeviceProperties(name=&#39;NVIDIA L40S&#39;, major=8, minor=9, total_memory=45589MB, multi_processor_count=142)</span>
+</span></span></code></pre></div><p>However, whilst this allows us to have multiple applications talk to the GPU, it has a drawback. If there&rsquo;s no more VRAM any new i.e. recently starting applications talking to the GPU will fail. In other words the last applications to start talking to the GPU will be the first ones to crash:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">strategy</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">type</span>: <span style="color:#ae81ff">Recreate</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">20</span> <span style="color:#75715e"># too many replicas, too much VRAM nom nom</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">nodeName</span>: <span style="color:#ae81ff">&lt;gpu_worker_node&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">containers</span>:
+</span></span><span style="display:flex;"><span>                - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-test</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">image</span>: <span style="color:#ae81ff">&lt;gpu_stress_image&gt;</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">imagePullPolicy</span>: <span style="color:#ae81ff">Always</span>
+</span></span></code></pre></div><p><img src="/blog/images/20-replicas.png" alt="20-replicas"></p>
+<p>You&rsquo;ll see this sort of error with pytorch:</p>
+<pre tabindex="0"><code>RuntimeError: CUDA error: out of memory
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+</code></pre><p>This means that we can&rsquo;t avoid applications monopolising a GPU. More on this later.</p>
+<p>On another note, for some reason Nvidia&rsquo;s DCGM exporter doesn&rsquo;t report metrics per pod. I&rsquo;ve not yet dug into why this is:</p>
+<p><img src="/blog/images/default-strategy-metrics.png" alt="default-strategy-metrics"></p>
+<h2 id="strategies">Strategies</h2>
+<h3 id="time-slicing">Time Slicing</h3>
+<p>Have a read of <a href="https://en.wikipedia.org/wiki/Round-robin_scheduling">this</a> to understand what time slicing does. Essentially, in order to carry out tasks seemingly simultaneously, we allocate a slice of time per process to do its work. The processes in this context will be k8s pods. To quote their <a href="https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/gpu-sharing.html#understanding-time-slicing-gpus">docs</a>:</p>
+<blockquote>
+<p>This mechanism for enabling time-slicing of GPUs in Kubernetes enables a system administrator to define a set of replicas for a GPU, each of which can be handed out independently to a pod to run workloads on.</p>
+</blockquote>
+<p>It&rsquo;s worth noting that time slicing is also a form of context switching. Furthermore, their docs mention that you can do something called GPU oversubscription with this technique. To be honest, I actually don&rsquo;t understand how oversubscription works and why you&rsquo;d use it, something about <a href="https://developer.nvidia.com/blog/unified-memory-cuda-beginners/">unified virtual memory</a>. Maybe one for another post.</p>
+<p>To start using this, we need to provide the <code>nvidia-device-plugin</code> helm chart with a config file. It&rsquo;s stored as a config map (CM) in k8s. You can supply this CM via the chart&rsquo;s <code>values.yaml</code>. Here&rsquo;s what it would look like for an ls40:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">config</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># This looks weird, but you have to have a default config map,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># which we make empty, otherwise the nvidia device plugin helm</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># chart explodes when installed</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">default</span>: <span style="color:#e6db74">&#39;default&#39;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">map</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">default</span>: <span style="color:#ae81ff">|-</span> <span style="color:#75715e"># blank CM</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">ls40</span>: |-<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            version: v1
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            sharing:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              timeSlicing:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                renameByDefault: false
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                failRequestsGreaterThanOne: true
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                resources:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                  - name: nvidia.com/gpu
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                    replicas: 10</span>            
+</span></span></code></pre></div><p>For this writeup, I used one GPU per worker node. Therefore this CM will advertise 10 GPU resources being available to k8s on a given GPU worker node. Similarly, if we had 10 GPUs per worker node, then we&rsquo;d have 100 replicas available to use i.e. 10 * 10 = 100</p>
+<p><img src="/blog/images/time-slicing-allocatable.png" alt="time-slicing-allocatable.png"></p>
+<p>As per nvidia&rsquo;s docs:</p>
+<blockquote>
+<p>In both cases, the plugin simply creates 10 references to each GPU and indiscriminately hands them out to anyone that asks for them.</p>
+</blockquote>
+<p>Therefore, if we update our manifest to use this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">strategy</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">type</span>: <span style="color:#ae81ff">Recreate</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">5</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">nodeName</span>: <span style="color:#ae81ff">&lt;gpu_worker_node&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">containers</span>:
+</span></span><span style="display:flex;"><span>                - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-test</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">image</span>: <span style="color:#ae81ff">&lt;gpu_stress_image&gt;</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">imagePullPolicy</span>: <span style="color:#ae81ff">Always</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>                      <span style="color:#f92672">limits</span>:
+</span></span><span style="display:flex;"><span>                          <span style="color:#f92672">nvidia.com/gpu</span>: <span style="color:#ae81ff">1</span> <span style="color:#75715e"># slice per pod</span>
+</span></span></code></pre></div><p>5 &ldquo;GPUS&rdquo; i.e. slices are in use:</p>
+<pre tabindex="0"><code>Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests    Limits
+  --------           --------    ------
+  cpu                155m (0%)   100m (0%)
+  memory             115Mi (0%)  750Mi (0%)
+  ephemeral-storage  0 (0%)      0 (0%)
+  hugepages-1Gi      0 (0%)      0 (0%)
+  hugepages-2Mi      0 (0%)      0 (0%)
+  nvidia.com/gpu     5           5
+</code></pre><p>Notice that the hardware isn&rsquo;t divided up. An Nvidia LS40 card has 142 SMs and 46GB of VRAM. Exec into a running gpu-stress-deployment pod and run the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>get_device_properties(torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#34;cuda&#34;</span>))
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># _CudaDeviceProperties(name=&#39;NVIDIA L40S&#39;, major=8, minor=9, total_memory=45589MB, multi_processor_count=142)</span>
+</span></span></code></pre></div><p>What happens if we set our deployment to use 11 GPUs? Well, k8s will fail to setup the 11th replica and then continously reattempt to provision it</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">strategy</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">type</span>: <span style="color:#ae81ff">Recreate</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">11</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">nodeName</span>: <span style="color:#ae81ff">&lt;gpu_worker_node&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">containers</span>:
+</span></span><span style="display:flex;"><span>                - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-test</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">image</span>: <span style="color:#ae81ff">&lt;gpu_stress_image&gt;</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">imagePullPolicy</span>: <span style="color:#ae81ff">Always</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>                      <span style="color:#f92672">limits</span>:
+</span></span><span style="display:flex;"><span>                          <span style="color:#f92672">nvidia.com/gpu</span>: <span style="color:#ae81ff">1</span> <span style="color:#75715e"># slice per pod</span>
+</span></span></code></pre></div><p><img src="/blog/images/gpu-admission-error.png" alt="gpu-admission-error"></p>
+<p>It might be that there&rsquo;s some sort of GC that&rsquo;ll kick in eventually to clean these pods up, but having pod count growing like this is bad/messy. I&rsquo;ve not yet looked into how to manage this.</p>
+<p>Secondly if I set 20 replicas to trigger a VRAM OOM scenario, we are back to the original problem. The last pods to startup will be the first ones to crash:</p>
+<p><img src="/blog/images/20-replicas-20-timeslices.png" alt="20-replicas-20-timeslices"></p>
+<p>The error message is different, but the end result is the same:</p>
+<pre tabindex="0"><code>torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 44.52 GiB of which 211.25 MiB is free. Process 2692273 has 3.71 GiB memory in use. Process 2692511 has 3.71 GiB memory in use. Process 2692595 has 3.71 GiB memory in use. Process 2692860 has 3.71 GiB memory in use. Process 2692845 has 3.71 GiB memory in use. Process 2693028 has 3.71 GiB memory in use. Process 2693278 has 3.71 GiB memory in use. Process 2693304 has 3.71 GiB memory in use. Process 2693619 has 3.71 GiB memory in use. Process 2693652 has 3.71 GiB memory in use. Process 2693872 has 3.71 GiB memory in use. Process 2698618 has 2.73 GiB memory in use. Process 2700219 has 702.00 MiB memory in use. Of the allocated memory 269.46 MiB is allocated by PyTorch, and 8.54 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+</code></pre><p>On the subject of memory, Nvidia&rsquo;s docs do mention that time slicing is not memory tolerant:</p>
+<blockquote>
+<p>Unlike Multi-Instance GPU (MIG), there is no memory or fault-isolation between replicas, but for some workloads this is better than not being able to share at all. Internally, GPU time-slicing is used to multiplex workloads from replicas of the same underlying GPU.</p>
+</blockquote>
+<p>It&rsquo;s unclear to me how to create a scenario where there&rsquo;s a memory fault, and as a result I don&rsquo;t know if I would personally ever run into this scenario. I&rsquo;ve had to put investigating that avenue down.</p>
+<p>We can see in this graph that with multiple replicas in play we&rsquo;re getting dots as opposed to continuous lines. This is because time slicing is context switching between each cuda application i.e pod:</p>
+<p><img src="/blog/images/time-slicing.png" alt="time-slicing"></p>
+<p>Therefore, one advantage of the slicing is that it does give better instrumentation via DCGM exporter than the default mechanism.</p>
+<h3 id="mig">Mig</h3>
+<p>The next strategy to explain how to setup is Multi-instance GPUs (MIG). This allows us to partition a GPU up to seven times to create what I like to think of as mini self-contained GPUs. In k8s, that means we can have up to seven cuda applications i.e. pods talking to one GPU.</p>
+<p>Now we can&rsquo;t use this on an nvidia LS40:</p>
+<p><a href="https://docs.nvidia.com/datacenter/tesla/mig-user-guide/index.html#supported-gpus">https://docs.nvidia.com/datacenter/tesla/mig-user-guide/index.html#supported-gpus</a></p>
+<p>But it does work on an A100.</p>
+<p>As per Nvidia&rsquo;s <a href="https://docs.google.com/document/d/1mdgMQ8g7WmaI_XVVRrCvHPFPOMCm5LQD5JefgAh6N8g/edit">google doc</a></p>
+<ul>
+<li>a MIG cnsists of a single “GPU Instance” and a single “Compute Instance&quot;.</li>
+<li>Only a single MIG device should ever be requested by any given container in the system
+(If it needs more compute / memory than a device provides, request a bigger device)</li>
+<li>MIG devices will not be created dynamically anywhere within the K8s software stack.</li>
+</ul>
+<p>Unlike time slicing, MIG is memory tolerant. Whatever that means.</p>
+<h4 id="stategies">Stategies</h4>
+<p>This term is about how MIG devices are exposed by Kubernetes onto a given node. As per Nvidia&rsquo;s <a href="https://docs.google.com/document/d/1bshSIcWNYRZGfywgwRHa07C0qRyOYKxWYxClbeJM-WM/edit#">Mig document</a> There are three (including the default) strategies:</p>
+<blockquote>
+<ul>
+<li>None - The none strategy is designed to keep the k8s-device-plugin running the same as it always has. It will make no distinction between GPUs that have MIG enabled on them or not, and will gladly enumerate all GPUs on the system and make them available over the nvidia.com/gpu resource type.</li>
+<li>Single - A Single type of GPU Per Node. This means you can have multiple GPUs, but they have to be the same card i.e. A100</li>
+<li>Mixed - GPUs on the Node may or may not have MIG enabled.</li>
+</ul>
+</blockquote>
+<p>I&rsquo;m going to focus on the Single strategy.</p>
+<h4 id="enabling-support">Enabling support</h4>
+<p>There are two areas to change. The helm chart and a driver update.</p>
+<p>Firstly, we update our values.yaml config to this and do a helm upgrade on the device plugin chart:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">config</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">default</span>: <span style="color:#e6db74">&#39;default&#39;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">map</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">default</span>: |-<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        a100: |-
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            version: v1
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            flags:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              migStrategy: &#34;single&#34;</span>        
+</span></span></code></pre></div><p>Next, we have to enable MIG ourselves on the GPU worker node via <code>nvidia-smi</code>. Here are the commands to run on the GPU worker node:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nvidia-smi -mig <span style="color:#ae81ff">1</span> <span style="color:#75715e"># 0 for disable, 1 for enable</span>
+</span></span></code></pre></div><p>You might see this warning:</p>
+<pre tabindex="0"><code>00000000:CA:00.0 is currently being used by one or more other processes (e.g. CUDA application or a monitoring application such as another instance of nvidia-smi). Please first kill all processes using the device and retry the command or reboot the system to make MIG mode effective.
+</code></pre><p>If you have no running processes showing up when the output of <code>nvidia-smi</code> is displayed, try doing <code>modprobe -r nvidia_drm</code> and running the mig enable command again. Alternatively, the simplest option is a reboot of the machine.</p>
+<p>After MIG is enabled, we need to get all of the available profiles, so we use <code>nvidia-smi</code> again. For an A100 the output looks like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nvidia-smi mig -lgip
+</span></span><span style="display:flex;"><span>+-----------------------------------------------------------------------------+
+</span></span><span style="display:flex;"><span>| GPU instance profiles:                                                      |
+</span></span><span style="display:flex;"><span>| GPU   Name             ID    Instances   Memory     P2P    SM    DEC   ENC  |
+</span></span><span style="display:flex;"><span>|                              Free/Total   GiB              CE    JPEG  OFA  |
+</span></span><span style="display:flex;"><span>|<span style="color:#f92672">=============================================================================</span>|
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">0</span>  MIG 1g.10gb       <span style="color:#ae81ff">19</span>     0/7        9.50       No     <span style="color:#ae81ff">14</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>|                                                             <span style="color:#ae81ff">1</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>+-----------------------------------------------------------------------------+
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">0</span>  MIG 1g.10gb+me    <span style="color:#ae81ff">20</span>     0/1        9.50       No     <span style="color:#ae81ff">14</span>     <span style="color:#ae81ff">1</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>|                                                             <span style="color:#ae81ff">1</span>     <span style="color:#ae81ff">1</span>     <span style="color:#ae81ff">1</span>   |
+</span></span><span style="display:flex;"><span>+-----------------------------------------------------------------------------+
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">0</span>  MIG 1g.20gb       <span style="color:#ae81ff">15</span>     0/4        19.50      No     <span style="color:#ae81ff">14</span>     <span style="color:#ae81ff">1</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>|                                                             <span style="color:#ae81ff">1</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>+-----------------------------------------------------------------------------+
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">0</span>  MIG 2g.20gb       <span style="color:#ae81ff">14</span>     0/3        19.50      No     <span style="color:#ae81ff">28</span>     <span style="color:#ae81ff">1</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>|                                                             <span style="color:#ae81ff">2</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>+-----------------------------------------------------------------------------+
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">0</span>  MIG 3g.40gb        <span style="color:#ae81ff">9</span>     0/2        39.25      No     <span style="color:#ae81ff">42</span>     <span style="color:#ae81ff">2</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>|                                                             <span style="color:#ae81ff">3</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>+-----------------------------------------------------------------------------+
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">0</span>  MIG 4g.40gb        <span style="color:#ae81ff">5</span>     0/1        39.25      No     <span style="color:#ae81ff">56</span>     <span style="color:#ae81ff">2</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>|                                                             <span style="color:#ae81ff">4</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>+-----------------------------------------------------------------------------+
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">0</span>  MIG 7g.80gb        <span style="color:#ae81ff">0</span>     0/1        78.75      No     <span style="color:#ae81ff">98</span>     <span style="color:#ae81ff">5</span>     <span style="color:#ae81ff">0</span>   |
+</span></span><span style="display:flex;"><span>|                                                             <span style="color:#ae81ff">7</span>     <span style="color:#ae81ff">1</span>     <span style="color:#ae81ff">1</span>   |
+</span></span><span style="display:flex;"><span>+-----------------------------------------------------------------------------+
+</span></span></code></pre></div><p>The instance profile names are a bit confusing. Let&rsquo;s break it down. A <code>1g.10gb</code> profile means 1 compute, 10GB of RAM. <code>4g.40gb</code> means 4 combined computes for a total of 40GB of RAM. It&rsquo;s worth calling out that you can only have certain combinations of profiles enabled at the same time. Further reading on the intracancies of GPU profiles can be found <a href="https://docs.nvidia.com/datacenter/tesla/mig-user-guide/index.html">here</a>. This screenshot shows the valid combinations for an a100 with 40GB of VRAM:</p>
+<p><img src="/blog/images/mig-partitioning.png" alt="mig-partitioning"></p>
+<p>As mentioned previously, we can only partition up to seven times. Furthermore, we can&rsquo;t create a <code>7g.80gb</code> profile 7 times since we only have 80gb of VRAM. Therefore, we&rsquo;ll keep things simple and create 7 <code>MIG 1g.10gb</code> profiles. Let&rsquo;s use the profile ID to do so:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nvidia-smi mig -cgi 19,19,19,19,19,19,19
+</span></span></code></pre></div><p>Next, we create the compute instances. As mentioned earlier, each gpu instance needs a compute instance to go with it.</p>
+<pre tabindex="0"><code>root@&lt;gpu_worker_node&gt;:~# nvidia-smi mig -cci
+Successfully created compute instance ID  0 on GPU  0 GPU instance ID  7 using profile MIG 1g.10gb (ID  0)
+Successfully created compute instance ID  0 on GPU  0 GPU instance ID  8 using profile MIG 1g.10gb (ID  0)
+Successfully created compute instance ID  0 on GPU  0 GPU instance ID  9 using profile MIG 1g.10gb (ID  0)
+Successfully created compute instance ID  0 on GPU  0 GPU instance ID 10 using profile MIG 1g.10gb (ID  0)
+Successfully created compute instance ID  0 on GPU  0 GPU instance ID 11 using profile MIG 1g.10gb (ID  0)
+Successfully created compute instance ID  0 on GPU  0 GPU instance ID 12 using profile MIG 1g.10gb (ID  0)
+Successfully created compute instance ID  0 on GPU  0 GPU instance ID 13 using profile MIG 1g.10gb (ID  0)
+</code></pre><p>If the device plugin is in a crash loop due to this sort of error, restart it by deleting the pod:</p>
+<pre tabindex="0"><code>I0612 14:52:38.021165 135 factory.go:104] Detected non-Tegra platform: /sys/devices/soc0/family file not found
+E0612 14:52:38.340639 135 main.go:132] error starting plugins: error getting plugins: failed to construct NVML resource managers: error building device map: error building device map from config.resources: invalid MIG configuration: at least one device with migEnabled=true was not configured correctly: error visiting device: device 0 has an invalid MIG configuration
+</code></pre><p>Let&rsquo;s confirm it&rsquo;s all working:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl logs &lt;nvidia-device-plugin-pod&gt; -n &lt;namespace&gt;  nvidia-device-plugin-ctr
+</span></span></code></pre></div><p>Should produce this sort of output</p>
+<pre tabindex="0"><code>Running with config:
+{
+  &#34;version&#34;: &#34;v1&#34;,
+  &#34;flags&#34;: {
+    &#34;migStrategy&#34;: &#34;single&#34;, # Need this
+    &#34;failOnInitError&#34;: true,
+    &#34;mpsRoot&#34;: &#34;/run/nvidia/mps&#34;,
+    &#34;nvidiaDriverRoot&#34;: &#34;/&#34;,
+    &#34;gdsEnabled&#34;: false,
+    &#34;mofedEnabled&#34;: false,
+    &#34;useNodeFeatureAPI&#34;: null,
+    &#34;plugin&#34;: {
+      &#34;passDeviceSpecs&#34;: false,
+      &#34;deviceListStrategy&#34;: [
+        &#34;envvar&#34;
+      ],
+      &#34;deviceIDStrategy&#34;: &#34;uuid&#34;,
+      &#34;cdiAnnotationPrefix&#34;: &#34;cdi.k8s.io/&#34;,
+      &#34;nvidiaCTKPath&#34;: &#34;/usr/bin/nvidia-ctk&#34;,
+      &#34;containerDriverRoot&#34;: &#34;/driver-root&#34;
+    }
+  },
+  &#34;resources&#34;: {
+    &#34;gpus&#34;: [
+      {
+        &#34;pattern&#34;: &#34;*&#34;,
+        &#34;name&#34;: &#34;nvidia.com/gpu&#34;
+      }
+    ],
+    &#34;mig&#34;: [  # Mig block is needed
+      {
+        &#34;pattern&#34;: &#34;*&#34;,
+        &#34;name&#34;: &#34;nvidia.com/gpu&#34;
+      }
+    ]
+  },
+  &#34;sharing&#34;: {
+    &#34;timeSlicing&#34;: {}
+  }
+}
+I0612 14:58:30.276172      39 main.go:279] Retrieving plugins.
+I0612 14:58:30.277391      39 factory.go:104] Detected NVML platform: found NVML library
+I0612 14:58:30.277493      39 factory.go:104] Detected non-Tegra platform: /sys/devices/soc0/family file not found
+I0612 14:58:30.996609      39 server.go:216] Starting GRPC server for &#39;nvidia.com/gpu&#39;
+I0612 14:58:30.997581      39 server.go:147] Starting to serve &#39;nvidia.com/gpu&#39; on /var/lib/kubelet/device-plugins/nvidia-gpu.sock
+I0612 14:58:31.003147      39 server.go:154] Registered device plugin for &#39;nvidia.com/gpu&#39; with Kubelet
+</code></pre><p>And a describe on your gpu node should produce this output (notice the 7 replicas):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">Capacity</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cpu</span>: <span style="color:#ae81ff">48</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ephemeral-storage</span>: <span style="color:#ae81ff">458761416Ki</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hugepages-1Gi</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hugepages-2Mi</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">memory</span>: <span style="color:#ae81ff">131433532Ki</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">nvidia.com/gpu</span>: <span style="color:#ae81ff">7</span> <span style="color:#75715e"># -----------</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">pods</span>: <span style="color:#ae81ff">110</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">Allocatable</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cpu</span>: <span style="color:#ae81ff">48</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ephemeral-storage</span>: <span style="color:#ae81ff">422794520286</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hugepages-1Gi</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hugepages-2Mi</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">memory</span>: <span style="color:#ae81ff">131331132Ki</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">nvidia.com/gpu</span>: <span style="color:#ae81ff">7</span> <span style="color:#75715e"># --------------</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">pods</span>: <span style="color:#ae81ff">110</span>
+</span></span></code></pre></div><p>Furthemore, the node labels will have been updated to match the profile we&rsquo;re using:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get node &lt;gpu_worker_node&gt;   --output<span style="color:#f92672">=</span>json | jq <span style="color:#e6db74">&#39;.metadata.labels&#39;</span> | grep -E <span style="color:#e6db74">&#34;mig|gpu.memory|gpu.count|gpu.product&#34;</span> | sort
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;nvidia.com/gpu.count&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#e6db74">&#34;7&#34;</span><span style="color:#960050;background-color:#1e0010">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;nvidia.com/gpu.memory&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#e6db74">&#34;9728&#34;</span><span style="color:#960050;background-color:#1e0010">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;nvidia.com/gpu.product&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#e6db74">&#34;NVIDIA-A100-80GB-PCIe-MIG-1g.10gb&#34;</span><span style="color:#960050;background-color:#1e0010">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;nvidia.com/mig.capable&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#e6db74">&#34;true&#34;</span><span style="color:#960050;background-color:#1e0010">,</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;nvidia.com/mig.strategy&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#e6db74">&#34;single&#34;</span><span style="color:#960050;background-color:#1e0010">,</span>
+</span></span></code></pre></div><p>Let&rsquo;s update our test deployment manifest to pin it to the a100 GPU:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">strategy</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">type</span>: <span style="color:#ae81ff">Recreate</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">7</span> <span style="color:#75715e"># Max replicas for MIG</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">annotations</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">logging.findmypast.com/enable</span>: <span style="color:#e6db74">&#39;true&#39;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">app</span>: <span style="color:#ae81ff">gpu-stress</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">nodeName</span>: <span style="color:#ae81ff">&lt;a100_gpu_worker_node_name&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">nodeSelector</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">nvidia.com/gpu</span>: <span style="color:#e6db74">&#39;true&#39;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">tolerations</span>:
+</span></span><span style="display:flex;"><span>                - <span style="color:#f92672">key</span>: <span style="color:#e6db74">&#39;nvidia.com/gpu&#39;</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">operator</span>: <span style="color:#e6db74">&#39;Exists&#39;</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">effect</span>: <span style="color:#e6db74">&#39;NoSchedule&#39;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">terminationGracePeriodSeconds</span>: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">containers</span>:
+</span></span><span style="display:flex;"><span>                - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">gpu-stress-test</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">image</span>: <span style="color:#ae81ff">&lt;gpu_stress_image&gt;</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">command</span>:
+</span></span><span style="display:flex;"><span>                      - <span style="color:#ae81ff">/bin/sh</span>
+</span></span><span style="display:flex;"><span>                      - -<span style="color:#ae81ff">c</span>
+</span></span><span style="display:flex;"><span>                      - |<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                          while true; do
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                            GPU_INFO=$(nvidia-smi -L | grep &#39;MIG&#39; | awk &#39;{print $6}&#39;)
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                            echo &#34;Pod Name: $(hostname) $GPU_INFO&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                            sleep 1
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                          done</span>                          
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">imagePullPolicy</span>: <span style="color:#ae81ff">Always</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>                      <span style="color:#f92672">limits</span>:
+</span></span><span style="display:flex;"><span>                          <span style="color:#f92672">nvidia.com/gpu</span>: <span style="color:#ae81ff">1</span>
+</span></span></code></pre></div><p>We can see that each pod has its own MIG instance:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl logs -l app<span style="color:#f92672">=</span>gpu-stress | uniq
+</span></span></code></pre></div><p>Produces:</p>
+<pre tabindex="0"><code>Pod Name: gpu-stress-deployment-559f78879f-dq6ph MIG-28f9cfba-f647-5fbd-9ffc-289d76ab68c3)
+Pod Name: gpu-stress-deployment-559f78879f-qn4sn MIG-6cc76831-29b0-5096-8f46-1857aa03020d)
+Pod Name: gpu-stress-deployment-559f78879f-4bzcw MIG-3de06ce0-345d-59d2-a456-07bb2b96c99f)
+Pod Name: gpu-stress-deployment-559f78879f-4qtf7 MIG-3ffa6d81-e907-5163-829c-7137caee9619)
+Pod Name: gpu-stress-deployment-559f78879f-58ktk MIG-e5fa528f-7a43-560b-a7e2-7514efe57318)
+Pod Name: gpu-stress-deployment-559f78879f-9dzmk MIG-7f075782-5e27-50ec-a749-1041c0343f1b)
+Pod Name: gpu-stress-deployment-559f78879f-bxqs2 MIG-30e63f44-35c2-530d-9437-2c49853eae09)
+</code></pre><p>And if we run our python snippet by exec&rsquo;ing into a pod running a cuda application we can see that the memory and processor count have been updated:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>get_device_properties(torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#39;cuda&#39;</span>))
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># _CudaDeviceProperties(name=&#39;NVIDIA A100 80GB PCIe MIG 1g.10gb&#39;, major=8, minor=0, total_memory=9728MB, multi_processor_count=14)</span>
+</span></span></code></pre></div><p>The MIG graph looks like this. Notce that, unlike time slicing, each pod is a continuous line. I&rsquo;ve set grafana to stack each time series to avoid all of them overlapping.</p>
+<p><img src="/blog/images/mig-framebuffer.png" alt="mig-framebuffer"></p>
+<p>A downside with MIG with this profile configuration is that the A100 GPU used for this post has an 80GB framebuffer. But 10GB+ is unaccounted for. I couldn&rsquo;t find an explanation for this on Nvidia&rsquo;s docs, but according to <a href="https://www.redhat.com/en/blog/using-nvidia-a100s-multi-instance-gpu-to-run-multiple-workloads-in-parallel-on-a-single-gpu">RedHat</a> the eight instance is reserved for allowing MIG to work. That will have to stay a mystery.</p>
+<h3 id="mps">MPS</h3>
+<p>Multi-Process Service (MPS) is available, but at the time of writing it&rsquo;s still experimental.</p>
+<p>Here&rsquo;s a high level diagram of this works:</p>
+<p><img src="/blog/images/mps-flow.png" alt="MPS Flow"></p>
+<p>And the gist of how each component works:</p>
+<ul>
+<li>Control Daemon Process – This starts/stops the server and coordinates connections between clients and servers. For this to work, the daemon sets the compute mode to <code>EXCLUSIVE_PROCESS</code>. Therefore, there&rsquo;s only one server available that can talk to the GPU.</li>
+<li>Client Runtime – This is a CUDA Driver library that&rsquo;s available on the cuda application pod.</li>
+<li>Server Process – The server is the clients’ shared connection to the GPU and provides concurrency between clients.</li>
+</ul>
+<p>The <a href="https://docs.nvidia.com/deploy/mps/index.html#the-benefits-of-mps">benefits of MPS</a> are:</p>
+<blockquote>
+<p>A single process may not utilize all the compute and memory-bandwidth capacity available on the GPU. MPS allows kernel and memcopy operations from different processes to overlap on the GPU, &gt; achieving higher utilization and shorter running times.</p>
+<p>Without MPS, each CUDA processes using a GPU allocates separate storage and scheduling resources on the GPU. In contrast, the MPS server allocates one copy of GPU storage and scheduling resources shared by all its clients.</p>
+<p>Without MPS, when processes share the GPU their scheduling resources must be swapped on and off the GPU. The MPS server shares one set of scheduling resources between all of its clients, eliminating the overhead of swapping when the GPU is scheduling between those clients.</p>
+</blockquote>
+<p>Therefore:</p>
+<ul>
+<li>We can enforce memory limits on processes that are allocated a given quota of GPU.</li>
+<li>We have less context switching.</li>
+</ul>
+<p>However, unlike MIGS, MPS is not memory tolerant.</p>
+<p>It&rsquo;s worth calling out how the client runtime connects to the server. If you start a cuda application in k8s, it talks to the daemon via an env var that is a path to a socket:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root@gpu-stress-deployment-5857c45556-fx6xs:/run# printenv | grep CUDA
+</span></span><span style="display:flex;"><span>CUDA_MPS_PIPE_DIRECTORY<span style="color:#f92672">=</span>/mps/nvidia.com/gpu/pipe
+</span></span></code></pre></div><p>This then interacts with the server. So in a pod using an MPS capable GPU node, you can do this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo get_default_active_thread_percentage | nvidia-cuda-mps-control
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 10.0 (10% due to 10 GPU replicas)</span>
+</span></span></code></pre></div><p>To confirm that connecting to the MPS server is successful</p>
+<h4 id="configuration">Configuration</h4>
+<p>As with time slicing, we define a config map to be used by the nvidia helm chart:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">config</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">default</span>: <span style="color:#e6db74">&#39;default&#39;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">map</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">default</span>: |-<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        ls40: |-
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            version: v1
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            sharing:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              mps:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                resources:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                  - name: nvidia.com/gpu
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                    replicas: 10</span>        
+</span></span></code></pre></div><p>This will cause the helm chart to spin up the mps control daemonset. This requires a <a href="https://github.com/nvidia/k8s-device-plugin/blob/04230ff7287bedb1768ef002eaafeb5aba649d40/deployments/helm/nvidia-device-plugin/templates/daemonset-mps-control-daemon.yml#l203">certain label</a> to be set to true for this to work:</p>
+<p>The way to get this label to go true is via the node feature discovery daemonset. It adds additional labels the worker node to let the device plugin know that we can use MPS.</p>
+<pre tabindex="0"><code>kubectl get node &lt;gpu_worker_node&gt;   --output=json | jq &#39;.metadata.labels&#39; | grep -E &#34;mps|SHARED|replicas&#34; | sort
+
+&#34;nvidia.com/gpu.product&#34;: &#34;NVIDIA-L40S-SHARED&#34;,
+&#34;nvidia.com/gpu.replicas&#34;: &#34;10&#34;,
+&#34;nvidia.com/gpu.sharing-strategy&#34;: &#34;mps&#34;,
+&#34;nvidia.com/mps.capable&#34;: &#34;true&#34;
+</code></pre><p>It&rsquo;s supposed to be that the helm chart will setup the mps daemon on each GPU node with an mps daemon pod. However, this didn&rsquo;t work for me at first. It took me hours to figure out that a reboot of the each machine <em>after</em> enabling MPS would allow the daemon pods to start. This doesn&rsquo;t seem right to me, as they make no mention of this requirement in their docs, so I&rsquo;ve opened an <a href="https://github.com/NVIDIA/k8s-device-plugin/issues/762">issue</a> on Nvidia&rsquo;s GitHub page.</p>
+<p>DCGM metrics exporter instruments something that looks like time slicing:</p>
+<p><img src="/blog/images/mps-metrics.png" alt="mps-metrics"></p>
+<p>Running our python snippet to get the GPU information via cuda we can see the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>get_device_properties(torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#34;cuda&#34;</span>))
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># _CudaDeviceProperties(name=&#39;NVIDIA L40S&#39;, major=8, minor=9, total_memory=45589MB, multi_processor_count=14)</span>
+</span></span></code></pre></div><p>Note that the multi_processor_count has dropped to 14 from 142. This is because MPS does <code>floor(multi_processor_count / replicas)</code></p>
+<p>Annoyingly the value returned from <code>total_memory</code> is misleading. You&rsquo;d think it would drop to 4GB i.e. <code>floor(total_memory / replicas)</code> sort of thing. However, it reports the total memory available on the hardware, not the framebuffer that&rsquo;s allocated to the pod. I spent several hours scratching my head trying to figure this out. I&rsquo;ve raised a separate <a href="https://github.com/NVIDIA/k8s-device-plugin/issues/764">issue</a> to understand this problem better.</p>
+<p>Nonetheless, I can see it works. My dummy application works if I set the deployment to only have 5 replicas:</p>
+<p><img src="/blog/images/gpu-stress-mps-enabled.png" alt="gpu-stress-mps-enabled"></p>
+<p>But will crash if I set it back to 10 replicas due to the available VRAM dropping to 4GB:</p>
+<pre tabindex="0"><code>Current time: 19886 days, 14:14:15.317649Time taken for one iteration: 0.994462 seconds
+Traceback (most recent call last):
+  File &#34;/app/tensor_stress.py&#34;, line 34, in &lt;module&gt;
+    tensor_core_stress_test()
+  File &#34;/app/tensor_stress.py&#34;, line 28, in tensor_core_stress_test
+    torch.cuda.synchronize()
+  File &#34;/opt/conda/lib/python3.10/site-packages/torch/cuda/__init__.py&#34;, line 801, in synchronize
+    return torch._C._cuda_synchronize()
+RuntimeError: CUDA error: the remote procedural call between the MPS server and the MPS client failed
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.```
+</code></pre><p>And if we try to re-run it:</p>
+<pre tabindex="0"><code>root@gpu-stress-deployment-5857c45556-j9gqs:/app# python tensor_stress.py
+Traceback (most recent call last):
+  File &#34;/app/tensor_stress.py&#34;, line 34, in &lt;module&gt;
+    tensor_core_stress_test()
+  File &#34;/app/tensor_stress.py&#34;, line 25, in tensor_core_stress_test
+    C = torch.matmul(A, B)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 GiB. GPU 0 has a total capacity of 44.52 GiB of which 448.96 MiB is free. Process 220085 has 28.06 MiB memory in use. Process 220083 has 4.06 GiB memory in use. Of the allocated memory 4.00 GiB is allocated by PyTorch, and 0 bytes is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+</code></pre><h3 id="selecting-multiple">Selecting Multiple</h3>
+<p>To specify multiple strategies, we configure multiple config maps.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">config</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">default</span>: <span style="color:#e6db74">&#39;default&#39;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">map</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">default</span>: <span style="color:#ae81ff">|-</span> <span style="color:#75715e"># default cm</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">ls40</span>: |-<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            version: v1
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            sharing:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              timeSlicing:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                resources:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                  - name: nvidia.com/gpu
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                    replicas: 6</span>            
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">a100</span>: |-<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            version: v1
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            sharing:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              mps:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                resources:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                  - name: nvidia.com/gpu
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                    replicas: 10</span>            
+</span></span></code></pre></div><p>Let&rsquo;s describe an nvidia device plugin pod (any will do):</p>
+<pre tabindex="0"><code># nvidia-device-plugin pod environment variables
+Environment:
+NODE_NAME: (v1:spec.nodeName)
+NODE_LABEL: nvidia.com/device-plugin.config
+CONFIG_FILE_SRCDIR: /available-configs
+CONFIG_FILE_DST: /config/config.yaml
+DEFAULT_CONFIG: default
+FALLBACK_STRATEGIES: named,single
+SEND_SIGNAL: true
+SIGNAL: 1
+PROCESS_TO_SIGNAL: nvidia-device-plugin
+</code></pre><p>The <code>NODE_LABEL</code> env var is important here. It&rsquo;s what the device plugin <a href="https://github.com/NVIDIA/k8s-device-plugin/blob/4b3d6b0a6613a3672f71ea4719fd8633eaafb4f3/cmd/config-manager/main.go#L152">uses</a> for deciding which config map within the <code>config.map</code> object to select.</p>
+<p>I&rsquo;ve just left the default value of <code>nvidia.com/device-plugin.config</code> as the node label name.</p>
+<p>For values, if we do this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl label node &lt;gpu_worker_node_a100&gt; nvidia.com/device-plugin.config<span style="color:#f92672">=</span>a100 --overwrite
+</span></span><span style="display:flex;"><span>kubectl label node &lt;gpu_worker_node_ls40&gt; nvidia.com/device-plugin.config<span style="color:#f92672">=</span>ls40 --overwrite
+</span></span></code></pre></div><p>We can then have two different types of GPU utilisation strategies running. So instead of having two mps control daemon pods, we now have one:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nvidia-dcgm-exporter-crjx7
+</span></span><span style="display:flex;"><span>nvidia-device-plugin-4qwj2
+</span></span><span style="display:flex;"><span>nvidia-device-plugin-cwjtx
+</span></span><span style="display:flex;"><span>nvidia-device-plugin-gpu-feature-discovery-jqzzl
+</span></span><span style="display:flex;"><span>nvidia-device-plugin-gpu-feature-discovery-xzfhk
+</span></span><span style="display:flex;"><span>nvidia-device-plugin-mps-control-daemon-pm7m5 <span style="color:#75715e"># for the ls40 gpu</span>
+</span></span><span style="display:flex;"><span>nvidia-device-plugin-node-feature-discovery-master-8475b9bd8k8j
+</span></span><span style="display:flex;"><span>nvidia-device-plugin-node-feature-discovery-worker-mr2vf
+</span></span><span style="display:flex;"><span>nvidia-device-plugin-node-feature-discovery-worker-mzllx
+</span></span></code></pre></div><p>And by reviewing the output of a describe on each node we can also see it&rsquo;s working:</p>
+<pre tabindex="0"><code>kubectl get node &lt;gpu_worker_node&gt;   --output=json | jq &#39;.metadata.labels&#39; | grep -E &#34;mps|SHARED|replicas&#34; | sort
+
+  &#34;nvidia.com/gpu.product&#34;: &#34;NVIDIA-L40S-SHARED&#34;,
+  &#34;nvidia.com/gpu.replicas&#34;: &#34;6&#34;,
+  &#34;nvidia.com/mps.capable&#34;: &#34;false&#34;
+
+kubectl get node &lt;gpu_worker_node&gt;   --output=json | jq &#39;.metadata.labels&#39; | grep -E &#34;mps|SHARED|replicas&#34; | sort
+
+  &#34;nvidia.com/gpu.product&#34;: &#34;NVIDIA-A100-80GB-PCIe-SHARED&#34;,
+  &#34;nvidia.com/gpu.replicas&#34;: &#34;10&#34;,
+  &#34;nvidia.com/gpu.sharing-strategy&#34;: &#34;mps&#34;,
+  &#34;nvidia.com/mps.capable&#34;: &#34;true&#34;
+</code></pre><h2 id="whats-next">What&rsquo;s next</h2>
+<p>In the next post I&rsquo;ll be benchmarking all three strategies to see what performance gains there are.</p>
+
+</article>
+</div>
+
+
+                
+                    
+                
+            </div>
+</main>
+    </body>
+</html>

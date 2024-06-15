@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Weblog</title>
-    <link>http://localhost:1313/blog/</link>
-    <description>Recent content on Weblog</description>
+    <title>Nvidia on Weblog</title>
+    <link>http://localhost:1313/blog/tags/nvidia/</link>
+    <description>Recent content in Nvidia on Weblog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-uk</language>
-    <lastBuildDate>Tue, 11 Jun 2024 14:13:34 +0000</lastBuildDate><atom:link href="http://localhost:1313/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 11 Jun 2024 14:13:34 +0000</lastBuildDate><atom:link href="http://localhost:1313/blog/tags/nvidia/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Understanding GPU utilization strategies in Kubernetes</title>
       <link>http://localhost:1313/blog/understanding-gpu-utilisation-strategies-in-kubernetes/</link>
@@ -16,15 +16,6 @@
       <description>GPU Utilisation Strategies These notes are aimed at anyone that wants to setup Nvidia GPU utilisation strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I&amp;rsquo;m also focusing on a high level ELI5, using the knowledge I&amp;rsquo;ve gained so far on the subject, of:
 MIG (Multi-Instance GPUs) MPS (Multi-process service) Time Slicing I used two Nvidia cards to put these notes together:
 A100 LS40 There&amp;rsquo;s still gaps in my understanding of how these strategies work and when to employ them, but this should get people to a point where they can start tinkering with them.</description>
-    </item>
-    
-    <item>
-      <title>A trick to speed up and slim down bloated Node images</title>
-      <link>http://localhost:1313/blog/a-trick-to-speed-up-and-slim-down-bloated-node-images/</link>
-      <pubDate>Sat, 24 Feb 2024 14:13:34 +0000</pubDate>
-      
-      <guid>http://localhost:1313/blog/a-trick-to-speed-up-and-slim-down-bloated-node-images/</guid>
-      <description>Disclaimer Before reading, you should only need to do this if you cannot use Plug and Play (PnP) from either yarn or pnpm. PnP does not have this issue as it loads modules that are stored as zip files. A single module that is zipped is just 1 file vs potentially 10s if not 100s of 1000s of files coming from each of your dependencies of dependencies of dependencies etc. etc.</description>
     </item>
     
   </channel>
