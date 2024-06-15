@@ -15,9 +15,9 @@
 
 
 <!DOCTYPE html>
-<html lang='en-uk'><head><script src="/blog/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=blog/livereload" data-no-instant defer></script>
+<html lang='en-uk'><head>
     <meta charset="utf-8">
-    <link rel="shortcut icon" href='http://localhost:1313/blog/favicon.ico' type="image/x-icon">
+    <link rel="shortcut icon" href='https://ronanquigley.com/blog/favicon.ico' type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Understanding GPU utilization strategies in Kubernetes - Weblog</title>
 
@@ -35,7 +35,7 @@
         <meta property="og:title" content="Understanding GPU utilization strategies in Kubernetes" />
 <meta property="og:description" content="Explore GPU utilization strategies in Kubernetes, focusing on Multi-Instance GPUs (MIG), Multi-Process Service (MPS), and Time Slicing." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://localhost:1313/blog/understanding-gpu-utilisation-strategies-in-kubernetes/" /><meta property="article:section" content="" />
+<meta property="og:url" content="https://ronanquigley.com/blog/understanding-gpu-utilisation-strategies-in-kubernetes/" /><meta property="article:section" content="" />
 <meta property="article:published_time" content="2024-06-11T14:13:34+00:00" />
 <meta property="article:modified_time" content="2024-06-11T14:13:34+00:00" />
 
@@ -46,7 +46,7 @@
         <meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Understanding GPU utilization strategies in Kubernetes"/>
 <meta name="twitter:description" content="Explore GPU utilization strategies in Kubernetes, focusing on Multi-Instance GPUs (MIG), Multi-Process Service (MPS), and Time Slicing."/>
 
-    <link rel="stylesheet" href="/blog/style.css" integrity="">
+    <link rel="stylesheet" href="/blog/style.min.fae245b6ce34259555eab2b011d31eb69cfeb04f46398e9c82df62439ad6edea66fa04d14a95b4bbf3ce9679be82b4badfed247f9962c2af62f53d0f389b424f.css" integrity="sha512-&#43;uJFts40JZVV6rKwEdMetpz&#43;sE9GOY6cgt9iQ5rW7epm&#43;gTRSpW0u/POlnm&#43;grS63&#43;0kf5liwq9i9T0POJtCTw==">
 
 
 
@@ -64,11 +64,11 @@
             document.documentElement.setAttribute("data-theme", "light");
         }
     </script>
-<script defer src="/blog/js/header.js" integrity=""></script>
+<script defer src="/blog/js/header.ef6a12cbb6ff661b899d830d9eb30134ede25fc9c26aaddecec6089c686d2e45a0bf73fa531eb2aba666bfa46699790ecc7cfee38ebc17a00ccaeffd2155eea0.js" integrity="sha512-72oSy7b/ZhuJnYMNnrMBNO3iX8nCaq3ezsYInGhtLkWgv3P6Ux6yq6Zmv6RmmXkOzHz&#43;4468F6AMyu/9IVXuoA=="></script>
 
 
 
-    <script defer src="/blog/js/zooming.js" integrity=""></script>
+    <script defer src="/blog/js/zooming.684b5d075bf94d0adfa21a7e7eb9acec1ddfb2e7b47d6657981617f0db0cf50949f1172801595afa3051f51b28d67f6a2d0c41be677b59b564307d9dbe4a4fd2.js" integrity="sha512-aEtdB1v5TQrfohp&#43;frms7B3fsue0fWZXmBYX8NsM9QlJ8RcoAVla&#43;jBR9Rso1n9qLQxBvmd7WbVkMH2dvkpP0g=="></script>
 
 
 
@@ -79,7 +79,7 @@
     
         
         
-            <script defer src="/blog/js/builtin-copy.js" integrity=""></script>
+            <script defer src="/blog/js/builtin-copy.56e07a74dd440b068ab36af35542ed8960865686c19fb809f38436877ac081570612cc8a913650b0c0e3073a336680c5df960e73bf7b1de83dc6aa996f2db858.js" integrity="sha512-VuB6dN1ECwaKs2rzVULtiWCGVobBn7gJ84Q2h3rAgVcGEsyKkTZQsMDjBzozZoDF35YOc797Heg9xqqZby24WA=="></script>
         
     
 
@@ -186,7 +186,7 @@
 <article class="line-numbers">
     
     
-    <h1 id="gpu-utilisation-strategies">GPU Utilisation Strategies</h1>
+    <h1 id="understanding-gpu-utilization-strategies-in-kubernetes">Understanding GPU utilization strategies in Kubernetes</h1>
 <p>These notes are aimed at anyone that wants to setup Nvidia GPU utilisation strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I&rsquo;m also focusing on a high level ELI5, using the knowledge I&rsquo;ve gained so far on the subject, of:</p>
 <ul>
 <li>MIG (Multi-Instance GPUs)</li>

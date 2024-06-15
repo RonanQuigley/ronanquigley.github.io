@@ -2,20 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>GPU on Weblog</title>
-    <link>http://localhost:1313/blog/tags/gpu/</link>
+    <link>https://ronanquigley.com/blog/tags/gpu/</link>
     <description>Recent content in GPU on Weblog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-uk</language>
-    <lastBuildDate>Tue, 11 Jun 2024 14:13:34 +0000</lastBuildDate><atom:link href="http://localhost:1313/blog/tags/gpu/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 11 Jun 2024 14:13:34 +0000</lastBuildDate><atom:link href="https://ronanquigley.com/blog/tags/gpu/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Understanding GPU utilization strategies in Kubernetes</title>
-      <link>http://localhost:1313/blog/understanding-gpu-utilisation-strategies-in-kubernetes/</link>
+      <link>https://ronanquigley.com/blog/understanding-gpu-utilisation-strategies-in-kubernetes/</link>
       <pubDate>Tue, 11 Jun 2024 14:13:34 +0000</pubDate>
       
-      <guid>http://localhost:1313/blog/understanding-gpu-utilisation-strategies-in-kubernetes/</guid>
-      <description>GPU Utilisation Strategies These notes are aimed at anyone that wants to setup Nvidia GPU utilisation strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I&amp;rsquo;m also focusing on a high level ELI5, using the knowledge I&amp;rsquo;ve gained so far on the subject, of:
-MIG (Multi-Instance GPUs) MPS (Multi-process service) Time Slicing I used two Nvidia cards to put these notes together:
-A100 LS40 There&amp;rsquo;s still gaps in my understanding of how these strategies work and when to employ them, but this should get people to a point where they can start tinkering with them.</description>
+      <guid>https://ronanquigley.com/blog/understanding-gpu-utilisation-strategies-in-kubernetes/</guid>
+      <description>Understanding GPU utilization strategies in Kubernetes These notes are aimed at anyone that wants to setup Nvidia GPU utilisation strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I&amp;rsquo;m also focusing on a high level ELI5, using the knowledge I&amp;rsquo;ve gained so far on the subject, of:
+MIG (Multi-Instance GPUs) MPS (Multi-process service) Time Slicing I used two Nvidia cards to put these notes together:</description>
     </item>
     
   </channel>
