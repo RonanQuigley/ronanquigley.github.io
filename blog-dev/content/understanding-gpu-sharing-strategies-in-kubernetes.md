@@ -152,7 +152,7 @@ spec:
 
 ## Compute Modes
 
-Before deliving into each utilisation strategy, we need to touch on Nvidia's system management interface, `nvidia-smi`.
+Before deliving into each strategy, we need to touch on Nvidia's system management interface, `nvidia-smi`.
 
 Specifically we need to talk about a certain flag named `compute-mode` as it will become relevant later in this post. I've quoted their [cli docs](https://developer.download.nvidia.com/compute/DCGM/docs/nvidia-smi-367.38.pdf) to explain what it means:
 
@@ -167,7 +167,7 @@ Specifically we need to talk about a certain flag named `compute-mode` as it wil
 > -   "Prohibited" means no contexts are allowed per device (no compute
 >     apps).
 
-As we'll see later, the compute mode will change depending on the GPU utilisation strategy.
+As we'll see later, the compute mode will change depending on the GPU strategy.
 
 ## Vanilla Configuration
 
@@ -901,7 +901,7 @@ kubectl label node <gpu_worker_node_a100> nvidia.com/device-plugin.config=a100 -
 kubectl label node <gpu_worker_node_ls40> nvidia.com/device-plugin.config=ls40 --overwrite
 ```
 
-We can then have two different types of GPU utilisation strategies running. So instead of having two mps control daemon pods, we now have one:
+We can then have two different types of GPU sharing strategies running. So instead of having two mps control daemon pods, we now have one:
 
 ```bash
 nvidia-dcgm-exporter-crjx7
