@@ -1,12 +1,12 @@
 ---
-title: 'Understanding GPU utilization strategies in Kubernetes'
+title: 'Understanding GPU sharing strategies in Kubernetes'
 date: 2024-06-11T14:13:34Z
 draft: false
 tags:
     - Nvidia
     - GPU
     - K8s
-description: 'Explore GPU utilization strategies in Kubernetes, focusing on Multi-Instance GPUs (MIG), Multi-Process Service (MPS), and Time Slicing.'
+description: 'Explore GPU sharing strategies in Kubernetes, focusing on Multi-Instance GPUs (MIG), Multi-Process Service (MPS), and Time Slicing.'
 keywords:
     - Nvidia
     - GPU
@@ -21,12 +21,12 @@ keywords:
     - DCGM metrics exporter
     - CUDA device properties
     - VRAM allocation in pods
-    - GPU utilization strategies
+    - GPU sharing strategies
 ---
 
-# Understanding GPU utilization strategies in Kubernetes
+# Understanding GPU sharing strategies in Kubernetes
 
-These notes are aimed at anyone that wants to setup Nvidia GPU utilisation strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I'm also focusing on a high level ELI5, using the knowledge I've gained so far on the subject, of:
+These notes are aimed at anyone that wants to setup Nvidia GPU sharing strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I'm also focusing on a high level ELI5, using the knowledge I've gained so far on the subject, of:
 
 -   MIG (Multi-Instance GPUs)
 -   MPS (Multi-process service)
@@ -428,7 +428,7 @@ We can see in this graph that with multiple replicas in play we're getting dots 
 
 Therefore, one advantage of the slicing is that it does give better instrumentation via DCGM exporter than the default mechanism.
 
-### Mig
+### MIG
 
 The next strategy to explain how to setup is Multi-instance GPUs (MIG). This allows us to partition a GPU up to seven times to create what I like to think of as mini self-contained GPUs. In k8s, that means we can have up to seven cuda applications i.e. pods talking to one GPU.
 
@@ -449,7 +449,7 @@ Unlike time slicing, MIG is memory tolerant. Whatever that means.
 
 #### Stategies
 
-This term is about how MIG devices are exposed by Kubernetes onto a given node. As per Nvidia's [Mig document](https://docs.google.com/document/d/1bshSIcWNYRZGfywgwRHa07C0qRyOYKxWYxClbeJM-WM/edit#) There are three (including the default) strategies:
+This term is about how MIG devices are exposed by Kubernetes onto a given node. As per Nvidia's [MIG document](https://docs.google.com/document/d/1bshSIcWNYRZGfywgwRHa07C0qRyOYKxWYxClbeJM-WM/edit#) There are three (including the default) strategies:
 
 > -   None - The none strategy is designed to keep the k8s-device-plugin running the same as it always has. It will make no distinction between GPUs that have MIG enabled on them or not, and will gladly enumerate all GPUs on the system and make them available over the nvidia.com/gpu resource type.
 > -   Single - A Single type of GPU Per Node. This means you can have multiple GPUs, but they have to be the same card i.e. A100
@@ -748,7 +748,7 @@ Therefore:
 -   We can enforce memory limits on processes that are allocated a given quota of GPU.
 -   We have less context switching.
 
-However, unlike MIGS, MPS is not memory tolerant.
+However, unlike MIG, MPS is not memory tolerant.
 
 It's worth calling out how the client runtime connects to the server. If you start a cuda application in k8s, it talks to the daemon via an env var that is a path to a socket:
 
@@ -935,4 +935,4 @@ kubectl get node <gpu_worker_node>   --output=json | jq '.metadata.labels' | gre
 
 ## What's next
 
-In the next post I'll be benchmarking all three strategies to see what performance gains there are.
+I'll be benchmarking all three strategies to see what performance gains there are. I'll do another writeup for the results.
