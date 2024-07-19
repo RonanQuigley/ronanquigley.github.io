@@ -51,6 +51,8 @@ To get the results I used the following configuration:
 -   I used a prometheus histogram so that I could observe latencies via buckets and count the overall number of observations made.
 -   Each benchmark was ran for several minutes to allow the GPU to warm up.
 
+---
+
 ## Results
 
 ### Latencies
@@ -101,7 +103,7 @@ It doesn't matter which line is which in the graph as there was zero difference.
 
 #### Inference
 
-So the matrix multiplication on its own was far too contrived of a test case. Therefore, my next benchmark used an object detection model. I chose the [ultralytics](https://github.com/ultralytics/ultralytics) YOLOv8 model to do this. I decided to use YOLO to see if I could get a similar set of results to [this](https://github.com/nebuly-ai/nos/tree/main/demos/gpu-sharing-comparison) Yolo benchmark.
+So the matrix multiplication on its own was far too contrived of a test case. Therefore, my next benchmark used an object detection model. I chose the [ultralytics](https://github.com/ultralytics/ultralytics) YOLOv8 model to do this. I decided to use YOLO to see if I could get a similar set of results to [this](https://github.com/nebuly-ai/nos/tree/main/demos/gpu-sharing-comparison) YOLO benchmark.
 
 ```python
 import os
