@@ -28,7 +28,7 @@ keywords:
     - Latency
 ---
 
-# Benchmarking
+# Benchmarking GPU sharing strategies in Kubernetes
 
 This writeup is the conclusion of my [previous post](https://ronanquigley.com/blog/understanding-gpu-sharing-strategies-in-kubernetes/). If you don't know what MIG, MPS and Time Slicing do, I'd suggest reading that one first.
 
