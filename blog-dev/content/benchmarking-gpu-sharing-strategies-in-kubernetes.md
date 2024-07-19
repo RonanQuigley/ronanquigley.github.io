@@ -146,7 +146,7 @@ Let's go back to the yolo v8 inference benchmark. Yes, it's about 2x slower per 
 
 ![throughput-yolo-v8](/blog/images/throughput-yolo-v8.png)
 
-### Conclusion
+## Conclusion
 
 How you choose to configure your GPU sharing settings ultimately comes down to the type of workload that you're doing and what you're looking to optimise for:
 
