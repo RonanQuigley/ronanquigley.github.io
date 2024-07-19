@@ -150,14 +150,35 @@
 
 <div class="postcard-layout content-margin">
     
+        <a href="http://localhost:1313/blog/benchmarking-gpu-sharing-strategies-in-kubernetes/">
+            <div class="postcard-item">
+                <div class="postcard-title">
+                    <span>Benchmarking GPU sharing strategies in Kubernetes</span>
+                </div>
+                <div class="postcard-summary">
+                    <span>Benchmarking This writeup is the conclusion of my previous post. If you don&amp;rsquo;t know what MIG, MPS and Time Slicing do, I&amp;rsquo;d suggest reading that one first.
+Before talking about the results, there&amp;rsquo;s one thing worth calling out in the Pytorch notes on CUDA:
+By default, GPU operations are asynchronous. When you call a function that uses the GPU, the operations are enqueued to the particular device, but not necessarily executed until later.</span>
+                </div>
+                <div class="postcard-metadata">
+                    <span>2024/07/19 · 
+    
+
+    
+</span>
+                </div>
+            </div>
+        </a>
+    
         <a href="http://localhost:1313/blog/understanding-gpu-sharing-strategies-in-kubernetes/">
             <div class="postcard-item">
                 <div class="postcard-title">
                     <span>Understanding GPU sharing strategies in Kubernetes</span>
                 </div>
                 <div class="postcard-summary">
-                    <span>Understanding GPU sharing strategies in Kubernetes These notes are aimed at anyone that wants to setup Nvidia GPU sharing strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I&amp;rsquo;m also focusing on a high level ELI5, using the knowledge I&amp;rsquo;ve gained so far on the subject, of:
-MIG (Multi-Instance GPUs) MPS (Multi-process service) Time Slicing I used two Nvidia cards to put these notes together:</span>
+                    <span>Understanding GPU sharing strategies in Kubernetes [UPDATE]
+I&amp;rsquo;ve now posted my benchmarks, so if you just need to see those stats then have a read of benchmarking-gpu-sharing-strategies-in-kubernetes.
+These notes are aimed at anyone that wants to setup Nvidia GPU sharing strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I&amp;rsquo;m also focusing on a high level ELI5, using the knowledge I&amp;rsquo;ve gained so far on the subject, of:</span>
                 </div>
                 <div class="postcard-metadata">
                     <span>2024/06/11 · 

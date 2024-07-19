@@ -26,6 +26,12 @@ keywords:
 
 # Understanding GPU sharing strategies in Kubernetes
 
+**[UPDATE]**
+
+I've now posted my benchmarks, so if you just need to see those stats then have a read of [benchmarking-gpu-sharing-strategies-in-kubernetes](ronanquigley.com/blog/benchmarking-gpu-sharing-strategies-in-kubernetes/).
+
+---
+
 These notes are aimed at anyone that wants to setup Nvidia GPU sharing strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I'm also focusing on a high level ELI5, using the knowledge I've gained so far on the subject, of:
 
 -   MIG (Multi-Instance GPUs)

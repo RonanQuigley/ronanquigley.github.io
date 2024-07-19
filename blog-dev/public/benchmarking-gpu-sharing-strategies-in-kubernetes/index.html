@@ -1,0 +1,300 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang='en-uk'><head><script src="/blog/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=blog/livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href='http://localhost:1313/blog/favicon.ico' type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Benchmarking GPU sharing strategies in Kubernetes - Weblog</title>
+
+    
+    <meta name="description" content="Benchmarking the performance of various GPU sharing strategies that can be used in Kubernetes. Benchmarks Multi-Instance GPUs (MIG), Multi-Process Service (MPS), Time Slicing and the default settings." />
+    
+
+    
+    <meta name="keywords" content="Nvidia,GPU,Kubernetes,GPU sharing benchmarks,GPU sharing strategies,Multi-Instance GPUs (MIG),Multi-Process Service (MPS),Time Slicing,Nvidia Device Plugin,GPU Sharing Benchmarking,MIG setup k8s,Pytorch,CUDA,Prometheus,Matrix Multiplication,YOLOv8,Object detection model,Latency" />
+    
+
+    
+
+    
+        <meta property="og:title" content="Benchmarking GPU sharing strategies in Kubernetes" />
+<meta property="og:description" content="Benchmarking the performance of various GPU sharing strategies that can be used in Kubernetes. Benchmarks Multi-Instance GPUs (MIG), Multi-Process Service (MPS), Time Slicing and the default settings." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://localhost:1313/blog/benchmarking-gpu-sharing-strategies-in-kubernetes/" /><meta property="article:section" content="" />
+<meta property="article:published_time" content="2024-07-19T00:00:00+00:00" />
+<meta property="article:modified_time" content="2024-07-19T00:00:00+00:00" />
+
+
+    
+
+    
+        <meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Benchmarking GPU sharing strategies in Kubernetes"/>
+<meta name="twitter:description" content="Benchmarking the performance of various GPU sharing strategies that can be used in Kubernetes. Benchmarks Multi-Instance GPUs (MIG), Multi-Process Service (MPS), Time Slicing and the default settings."/>
+
+    <link rel="stylesheet" href="/blog/style.css" integrity="">
+
+
+
+
+
+    
+    <script>
+        if (!('theme' in localStorage)) {
+            localStorage.theme = 'dark';
+        }
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute("data-theme", "dark");
+        } else {
+            document.documentElement.setAttribute("data-theme", "light");
+        }
+    </script>
+<script defer src="/blog/js/header.js" integrity=""></script>
+
+
+
+    <script defer src="/blog/js/zooming.js" integrity=""></script>
+
+
+
+
+
+
+
+    
+        
+        
+            <script defer src="/blog/js/builtin-copy.js" integrity=""></script>
+        
+    
+
+
+
+
+
+
+
+</head>
+<body>
+        <main><header>
+    <div class="brand">
+        <div id="sidebar_btn">
+            <svg id="menu_icon" width="26px" height="26px" viewBox="0 0 24 24">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24" height="24" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+</svg>
+
+</svg>
+        </div>
+
+        <div>
+            <a href="/blog/">Weblog</a>
+        </div>
+    </div>
+
+    <div class="toolbox">
+        <div id="theme_tool">
+            <svg id="dark_mode_btn" class="toolbox-btn" width="18px" height="18px" viewBox="0 0 24 24">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24" height="24" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+</svg>
+
+</svg>
+            <svg id="light_mode_btn" class="toolbox-btn" width="18px" height="18px" viewBox="0 0 24 24">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24" height="24" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+</svg>
+
+</svg>
+        </div>
+
+        
+
+        
+    </div>
+</header>
+<nav id="navbar" class="pure-menu">
+    <ul class="pure-menu-list"><li class="navbar-item pure-menu-item ">
+                    
+                        <a href="https://ronanquigley.com" class="pure-menu-link">home</a>
+                    
+                </li></ul>
+</nav>
+<div id="sidebar_canvas_overlay" class="hidden"></div>
+<div id="sidebar" class="close">
+    <ul><li>
+                    <a href="https://ronanquigley.com">home</a>
+                </li></ul>
+</div><div id="content" class="content-margin">
+                
+    
+    <div class="collapsible-menu-wrapper"><div class="collapsible-menu-type"><span>Table of contents</span></div><div class="collapsible-menu">
+        
+            <nav id="TableOfContents">
+  <ul>
+    <li><a href="#results">Results</a>
+      <ul>
+        <li><a href="#latencies">Latencies</a></li>
+        <li><a href="#latency-vs-throughput">Latency vs. Throughput</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+        
+    </div></div>
+
+
+
+    <div class="content-margin">
+
+
+
+<article class="line-numbers">
+    
+    
+    <h1 id="benchmarking">Benchmarking</h1>
+<p>This writeup is the conclusion of my <a href="https://ronanquigley.com/blog/understanding-gpu-sharing-strategies-in-kubernetes/">previous post</a>. If you don&rsquo;t know what MIG, MPS and Time Slicing do, I&rsquo;d suggest reading that one first.</p>
+<p>Before talking about the results, there&rsquo;s one thing worth calling out in the <a href="https://pytorch.org/docs/stable/notes/cuda.html">Pytorch</a> notes on CUDA:</p>
+<blockquote>
+<p>By default, GPU operations are asynchronous. When you call a function that uses the GPU, the operations are enqueued to the particular device, but not necessarily executed until later. This allows us to execute more computations in parallel, including operations on CPU or other GPUs.</p>
+<p>A consequence of the asynchronous computation is that time measurements without synchronizations are not accurate. To get precise measurements, one should either call torch.cuda.synchronize() before measuring, or use torch.cuda.Event to record times as following:</p>
+</blockquote>
+<p>However, this is not a concern for these benchmarks due to the following reasons:</p>
+<ul>
+<li>after testing this with and without <code>torch.cuda.synchronize()</code> calls, there was no difference in the timings.</li>
+<li>Where appropriate, pytorch would internally call synchronize as it would have to in order to return the result of a gpu calculation to the CPU. You can see this in the logs when you call <code>torch.cuda.set_sync_debug_mode(debug_mode=&quot;warn&quot;)</code></li>
+</ul>
+<p>To get the results I used the following configuration:</p>
+<ul>
+<li>Nvidia A100.</li>
+<li>Replica count of 7 pods for each strategy. I chose 7 as that is the maximum number of replicas that can be set with MIG.</li>
+<li>I setup a prometheus instance to scrape the metrics. Setting that up is out of scope, so go read the <a href="https://prometheus.io/">prometheus</a> docs if you don&rsquo;t know how to do that.</li>
+<li>I used a prometheus histogram so that I could observe latencies via buckets and count the overall number of observations made.</li>
+<li>Each benchmark was ran for several minutes to allow the GPU to warm up.</li>
+</ul>
+<h2 id="results">Results</h2>
+<h3 id="latencies">Latencies</h3>
+<h4 id="matrix-multiplication">Matrix Multiplication</h4>
+<p>Here I just multiply two <em>enormous</em> square matrices together and return the result.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> time
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> prometheus_client <span style="color:#f92672">import</span> start_http_server, Histogram
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Check if CUDA is available and Tensor Cores are supported</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available():
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">SystemError</span>(<span style="color:#e6db74">&#34;CUDA is not available on this system&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>device <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#34;cuda&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>set_sync_debug_mode(debug_mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;warn&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>set_default_device(device) <span style="color:#75715e"># ensure we actually use the GPU and don&#39;t do the calculations on the CPU</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>h <span style="color:#f92672">=</span> Histogram(<span style="color:#e6db74">&#39;gpu_stress_mat_mul_seconds_duration&#39;</span>, <span style="color:#e6db74">&#39;Description of histogram&#39;</span>, buckets<span style="color:#f92672">=</span>(<span style="color:#ae81ff">0.001</span>, <span style="color:#ae81ff">0.005</span>, <span style="color:#ae81ff">0.01</span>, <span style="color:#ae81ff">0.1</span>, <span style="color:#ae81ff">0.25</span>, <span style="color:#ae81ff">0.5</span>, <span style="color:#ae81ff">1.0</span>, <span style="color:#ae81ff">2.0</span>, <span style="color:#ae81ff">3.0</span>, <span style="color:#ae81ff">4.0</span>, <span style="color:#ae81ff">5.0</span>, <span style="color:#ae81ff">10.0</span>, <span style="color:#ae81ff">20.0</span>, <span style="color:#ae81ff">50.0</span>, <span style="color:#ae81ff">100.0</span>, <span style="color:#ae81ff">200.0</span>, <span style="color:#ae81ff">500.0</span>, <span style="color:#ae81ff">1000.0</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Function to perform matrix multiplication using Tensor Cores</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">stress</span>(matrix_size<span style="color:#f92672">=</span><span style="color:#ae81ff">16384</span>):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Create random matrices on the GPU</span>
+</span></span><span style="display:flex;"><span>    m1 <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>randn(matrix_size, matrix_size, dtype<span style="color:#f92672">=</span>torch<span style="color:#f92672">.</span>float16)
+</span></span><span style="display:flex;"><span>    m2 <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>randn(matrix_size, matrix_size, dtype<span style="color:#f92672">=</span>torch<span style="color:#f92672">.</span>float16)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Perform matrix multiplications indefinitely</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
+</span></span><span style="display:flex;"><span>        start <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
+</span></span><span style="display:flex;"><span>        output <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>matmul(m1, m2)
+</span></span><span style="display:flex;"><span>        print(output<span style="color:#f92672">.</span>any())
+</span></span><span style="display:flex;"><span>        end <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
+</span></span><span style="display:flex;"><span>        h<span style="color:#f92672">.</span>observe(end <span style="color:#f92672">-</span> start)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+</span></span><span style="display:flex;"><span>    start_http_server(<span style="color:#ae81ff">8000</span>)
+</span></span><span style="display:flex;"><span>    stress()
+</span></span></code></pre></div><p><img src="/blog/images/mat-mul-7-replicas.png" alt="matrix-multiplication"></p>
+<p>It doesn&rsquo;t matter which line is which in the graph as there was zero difference.</p>
+<h4 id="inference">Inference</h4>
+<p>So the matrix multiplication on its own was far too contrived of a test case. Therefore, my next benchmark used an object detection model. I chose the <a href="https://github.com/ultralytics/ultralytics">ultralytics</a> YOLOv8 model to do this. I decided to use YOLO to see if I could get a similar set of results to <a href="https://github.com/nebuly-ai/nos/tree/main/demos/gpu-sharing-comparison">this</a> Yolo benchmark.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> os
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Set YOLOv8 to quiet mode</span>
+</span></span><span style="display:flex;"><span>os<span style="color:#f92672">.</span>environ[<span style="color:#e6db74">&#39;YOLO_VERBOSE&#39;</span>] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;False&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> prometheus_client <span style="color:#f92672">import</span> start_http_server, Histogram
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> ultralytics <span style="color:#f92672">import</span> YOLO
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>start_http_server(<span style="color:#ae81ff">8000</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>device <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#34;cuda&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>model <span style="color:#f92672">=</span> YOLO(<span style="color:#e6db74">&#34;yolov8n.pt&#34;</span>)<span style="color:#f92672">.</span>to(device<span style="color:#f92672">=</span>device)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>h <span style="color:#f92672">=</span> Histogram(<span style="color:#e6db74">&#39;gpu_stress_inference_yolov8_milliseconds_duration&#39;</span>, <span style="color:#e6db74">&#39;Description of histogram&#39;</span>, buckets<span style="color:#f92672">=</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">15</span>, <span style="color:#ae81ff">20</span>, <span style="color:#ae81ff">25</span>, <span style="color:#ae81ff">30</span>, <span style="color:#ae81ff">35</span>, <span style="color:#ae81ff">40</span>, <span style="color:#ae81ff">50</span>, <span style="color:#ae81ff">75</span>, <span style="color:#ae81ff">100</span>, <span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">200</span>, <span style="color:#ae81ff">500</span>, <span style="color:#ae81ff">1000</span>, <span style="color:#ae81ff">5000</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">run_model</span>():
+</span></span><span style="display:flex;"><span>    results <span style="color:#f92672">=</span> model(<span style="color:#e6db74">&#34;https://ultralytics.com/images/bus.jpg&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># print(model.device.type)</span>
+</span></span><span style="display:flex;"><span>    h<span style="color:#f92672">.</span>observe(results[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">.</span>speed[<span style="color:#e6db74">&#39;inference&#39;</span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
+</span></span><span style="display:flex;"><span>    run_model()
+</span></span></code></pre></div><p><img src="/blog/images/inference-yolo-7-replicas.png" alt="inference-yolo-7-replicas"></p>
+<p>Whilst I was able to replicate their conclusion i.e MPS is the best sharing strategy out of the three, they did not actually benchmark MPS against the default strategy. When I did that, it showed a very interesting set of results. The Yolo model performed best with the default settings! I also tried this again with a Bert model and randomising the input tokens, but I was getting the same trend in the results.</p>
+<h3 id="latency-vs-throughput">Latency vs. Throughput</h3>
+<p>As I was initially a bit confused by the stats, I posted on <a href="https://stackoverflow.com/questions/78653544/why-use-mps-time-slicing-or-mig-if-nvidias-defaults-have-better-performance?noredirect=1#comment138670571_78653544">stackoverflow</a> to help clarify these results. I managed to get a very detailed answer back from someone that worked at Nvidia! Their response was that the outcome will vary depending on whether you are optimising for latency or throughput. Let&rsquo;s define what I mean by this:</p>
+<ul>
+<li>
+<p>Latency is about speed. It&rsquo;s the time it takes to complete a <strong>single</strong> task or operation. A lower latency means a faster response time for individual tasks. This is useful for real-time scenarios e.g. a chatbot.</p>
+</li>
+<li>
+<p>Throughput, on the other hand, is about volume. It refers to the number of tasks or operations that can be completed in a given period of time. Higher throughput is going to be more important for workloads that require processing large volumes of data or running multiple applications concurrently.</p>
+</li>
+</ul>
+<p>Let&rsquo;s go back to the yolo v8 inference benchmark. Yes, it&rsquo;s about 2x slower per second from a latency point of view, but if we look at throughput a different picture emerges. We get ~4x the throughput per second with MPS vs. the default settings:</p>
+<p><img src="/blog/images/throughput-yolo-v8.png" alt="throughput-yolo-v8"></p>
+<h3 id="conclusion">Conclusion</h3>
+<p>How you choose to configure your GPU sharing settings ultimately comes down to the type of workload that you&rsquo;re doing and what you&rsquo;re looking to optimise for:</p>
+<ul>
+<li>If it&rsquo;s latency, then you should use the default settings. Each application will get access to the <em>entire</em> GPU, do its work, and once finished, the GPU will be provided to the next application that was requesting compute. Therefore, as we are not breaking a GPU up into 7 figurative pieces, it stands to reason that will be the option that provides the lowest latency.</li>
+<li>If you want concurrency and throughput at the expense of latency - use MPS. A good use case is data pipelines that leverage machine learning.</li>
+<li>If fault tolerance/isolation/quality of service are critical, then you could use MIG.</li>
+</ul>
+
+</article>
+</div>
+
+
+                
+                    
+                
+            </div>
+</main>
+    </body>
+</html>

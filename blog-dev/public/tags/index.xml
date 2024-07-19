@@ -6,11 +6,11 @@
     <description>Recent content in Tags on Weblog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-uk</language>
-    <lastBuildDate>Tue, 11 Jun 2024 14:13:34 +0000</lastBuildDate><atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 19 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>GPU</title>
       <link>http://localhost:1313/blog/tags/gpu/</link>
-      <pubDate>Tue, 11 Jun 2024 14:13:34 +0000</pubDate>
+      <pubDate>Fri, 19 Jul 2024 00:00:00 +0000</pubDate>
       
       <guid>http://localhost:1313/blog/tags/gpu/</guid>
       <description></description>
@@ -19,7 +19,7 @@
     <item>
       <title>K8s</title>
       <link>http://localhost:1313/blog/tags/k8s/</link>
-      <pubDate>Tue, 11 Jun 2024 14:13:34 +0000</pubDate>
+      <pubDate>Fri, 19 Jul 2024 00:00:00 +0000</pubDate>
       
       <guid>http://localhost:1313/blog/tags/k8s/</guid>
       <description></description>
@@ -28,7 +28,7 @@
     <item>
       <title>Nvidia</title>
       <link>http://localhost:1313/blog/tags/nvidia/</link>
-      <pubDate>Tue, 11 Jun 2024 14:13:34 +0000</pubDate>
+      <pubDate>Fri, 19 Jul 2024 00:00:00 +0000</pubDate>
       
       <guid>http://localhost:1313/blog/tags/nvidia/</guid>
       <description></description>

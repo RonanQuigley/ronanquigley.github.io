@@ -6,15 +6,27 @@
     <description>Recent content on Weblog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-uk</language>
-    <lastBuildDate>Tue, 11 Jun 2024 14:13:34 +0000</lastBuildDate><atom:link href="http://localhost:1313/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 19 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Benchmarking GPU sharing strategies in Kubernetes</title>
+      <link>http://localhost:1313/blog/benchmarking-gpu-sharing-strategies-in-kubernetes/</link>
+      <pubDate>Fri, 19 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/blog/benchmarking-gpu-sharing-strategies-in-kubernetes/</guid>
+      <description>Benchmarking This writeup is the conclusion of my previous post. If you don&amp;rsquo;t know what MIG, MPS and Time Slicing do, I&amp;rsquo;d suggest reading that one first.
+Before talking about the results, there&amp;rsquo;s one thing worth calling out in the Pytorch notes on CUDA:
+By default, GPU operations are asynchronous. When you call a function that uses the GPU, the operations are enqueued to the particular device, but not necessarily executed until later.</description>
+    </item>
+    
     <item>
       <title>Understanding GPU sharing strategies in Kubernetes</title>
       <link>http://localhost:1313/blog/understanding-gpu-sharing-strategies-in-kubernetes/</link>
       <pubDate>Tue, 11 Jun 2024 14:13:34 +0000</pubDate>
       
       <guid>http://localhost:1313/blog/understanding-gpu-sharing-strategies-in-kubernetes/</guid>
-      <description>Understanding GPU sharing strategies in Kubernetes These notes are aimed at anyone that wants to setup Nvidia GPU sharing strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I&amp;rsquo;m also focusing on a high level ELI5, using the knowledge I&amp;rsquo;ve gained so far on the subject, of:
-MIG (Multi-Instance GPUs) MPS (Multi-process service) Time Slicing I used two Nvidia cards to put these notes together:</description>
+      <description>Understanding GPU sharing strategies in Kubernetes [UPDATE]
+I&amp;rsquo;ve now posted my benchmarks, so if you just need to see those stats then have a read of benchmarking-gpu-sharing-strategies-in-kubernetes.
+These notes are aimed at anyone that wants to setup Nvidia GPU sharing strategies within k8s without having to trawl through a lot of crypic and dense Nvidia documentation. I&amp;rsquo;m also focusing on a high level ELI5, using the knowledge I&amp;rsquo;ve gained so far on the subject, of:</description>
     </item>
     
     <item>

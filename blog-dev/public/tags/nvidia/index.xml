@@ -6,7 +6,18 @@
     <description>Recent content in Nvidia on Weblog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-uk</language>
-    <lastBuildDate>Tue, 11 Jun 2024 14:13:34 +0000</lastBuildDate><atom:link href="http://localhost:1313/blog/tags/nvidia/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 19 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/blog/tags/nvidia/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Benchmarking GPU sharing strategies in Kubernetes</title>
+      <link>http://localhost:1313/blog/benchmarking-gpu-sharing-strategies-in-kubernetes/</link>
+      <pubDate>Fri, 19 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/blog/benchmarking-gpu-sharing-strategies-in-kubernetes/</guid>
+      <description>Benchmarking This writeup is the conclusion of my previous post. If you don&amp;rsquo;t know what MIG, MPS and Time Slicing do, I&amp;rsquo;d suggest reading that one first.
+Before talking about the results, there&amp;rsquo;s one thing worth calling out in Pytorch&amp;rsquo;s notes on CUDA:
+By default, GPU operations are asynchronous. When you call a function that uses the GPU, the operations are enqueued to the particular device, but not necessarily executed until later.</description>
+    </item>
+    
     <item>
       <title>Understanding GPU sharing strategies in Kubernetes</title>
       <link>http://localhost:1313/blog/understanding-gpu-sharing-strategies-in-kubernetes/</link>
