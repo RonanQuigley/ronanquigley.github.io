@@ -163,9 +163,9 @@
       <ul>
         <li><a href="#latencies">Latencies</a></li>
         <li><a href="#latency-vs-throughput">Latency vs. Throughput</a></li>
-        <li><a href="#conclusion">Conclusion</a></li>
       </ul>
     </li>
+    <li><a href="#conclusion">Conclusion</a></li>
   </ul>
 </nav>
         
@@ -180,7 +180,7 @@
 <article class="line-numbers">
     
     
-    <h1 id="benchmarking">Benchmarking</h1>
+    <h1 id="benchmarking-gpu-sharing-strategies-in-kubernetes">Benchmarking GPU sharing strategies in Kubernetes</h1>
 <p>This writeup is the conclusion of my <a href="https://ronanquigley.com/blog/understanding-gpu-sharing-strategies-in-kubernetes/">previous post</a>. If you don&rsquo;t know what MIG, MPS and Time Slicing do, I&rsquo;d suggest reading that one first.</p>
 <p>Before talking about the results, there&rsquo;s one thing worth calling out in the <a href="https://pytorch.org/docs/stable/notes/cuda.html">Pytorch</a> notes on CUDA:</p>
 <blockquote>
@@ -200,6 +200,7 @@
 <li>I used a prometheus histogram so that I could observe latencies via buckets and count the overall number of observations made.</li>
 <li>Each benchmark was ran for several minutes to allow the GPU to warm up.</li>
 </ul>
+<hr>
 <h2 id="results">Results</h2>
 <h3 id="latencies">Latencies</h3>
 <h4 id="matrix-multiplication">Matrix Multiplication</h4>
@@ -240,7 +241,7 @@
 </span></span></code></pre></div><p><img src="/blog/images/mat-mul-7-replicas.png" alt="matrix-multiplication"></p>
 <p>It doesn&rsquo;t matter which line is which in the graph as there was zero difference.</p>
 <h4 id="inference">Inference</h4>
-<p>So the matrix multiplication on its own was far too contrived of a test case. Therefore, my next benchmark used an object detection model. I chose the <a href="https://github.com/ultralytics/ultralytics">ultralytics</a> YOLOv8 model to do this. I decided to use YOLO to see if I could get a similar set of results to <a href="https://github.com/nebuly-ai/nos/tree/main/demos/gpu-sharing-comparison">this</a> Yolo benchmark.</p>
+<p>So the matrix multiplication on its own was far too contrived of a test case. Therefore, my next benchmark used an object detection model. I chose the <a href="https://github.com/ultralytics/ultralytics">ultralytics</a> YOLOv8 model to do this. I decided to use YOLO to see if I could get a similar set of results to <a href="https://github.com/nebuly-ai/nos/tree/main/demos/gpu-sharing-comparison">this</a> YOLO benchmark.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> os
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># Set YOLOv8 to quiet mode</span>
@@ -279,7 +280,7 @@
 </ul>
 <p>Let&rsquo;s go back to the yolo v8 inference benchmark. Yes, it&rsquo;s about 2x slower per second from a latency point of view, but if we look at throughput a different picture emerges. We get ~4x the throughput per second with MPS vs. the default settings:</p>
 <p><img src="/blog/images/throughput-yolo-v8.png" alt="throughput-yolo-v8"></p>
-<h3 id="conclusion">Conclusion</h3>
+<h2 id="conclusion">Conclusion</h2>
 <p>How you choose to configure your GPU sharing settings ultimately comes down to the type of workload that you&rsquo;re doing and what you&rsquo;re looking to optimise for:</p>
 <ul>
 <li>If it&rsquo;s latency, then you should use the default settings. Each application will get access to the <em>entire</em> GPU, do its work, and once finished, the GPU will be provided to the next application that was requesting compute. Therefore, as we are not breaking a GPU up into 7 figurative pieces, it stands to reason that will be the option that provides the lowest latency.</li>

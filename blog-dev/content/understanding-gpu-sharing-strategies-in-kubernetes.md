@@ -28,7 +28,7 @@ keywords:
 
 **[UPDATE]**
 
-I've now posted my benchmarks, so if you just need to see those stats then have a read of [benchmarking-gpu-sharing-strategies-in-kubernetes](ronanquigley.com/blog/benchmarking-gpu-sharing-strategies-in-kubernetes/).
+I've now posted my benchmarks, so if you just need to see those stats then have a read of [benchmarking-gpu-sharing-strategies-in-kubernetes](https://ronanquigley.com/blog/benchmarking-gpu-sharing-strategies-in-kubernetes/).
 
 ---
 

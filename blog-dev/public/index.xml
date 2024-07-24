@@ -13,7 +13,7 @@
       <pubDate>Fri, 19 Jul 2024 00:00:00 +0000</pubDate>
       
       <guid>http://localhost:1313/blog/benchmarking-gpu-sharing-strategies-in-kubernetes/</guid>
-      <description>Benchmarking This writeup is the conclusion of my previous post. If you don&amp;rsquo;t know what MIG, MPS and Time Slicing do, I&amp;rsquo;d suggest reading that one first.
+      <description>Benchmarking GPU sharing strategies in Kubernetes This writeup is the conclusion of my previous post. If you don&amp;rsquo;t know what MIG, MPS and Time Slicing do, I&amp;rsquo;d suggest reading that one first.
 Before talking about the results, there&amp;rsquo;s one thing worth calling out in the Pytorch notes on CUDA:
 By default, GPU operations are asynchronous. When you call a function that uses the GPU, the operations are enqueued to the particular device, but not necessarily executed until later.</description>
     </item>
@@ -36,6 +36,17 @@ These notes are aimed at anyone that wants to setup Nvidia GPU sharing strategie
       
       <guid>http://localhost:1313/blog/a-trick-to-speed-up-and-slim-down-bloated-node-images/</guid>
       <description>Disclaimer Before reading, you should only need to do this if you cannot use Plug and Play (PnP) from either yarn or pnpm. PnP does not have this issue as it loads modules that are stored as zip files. A single module that is zipped is just 1 file vs potentially 10s if not 100s of 1000s of files coming from each of your dependencies of dependencies of dependencies etc. etc.</description>
+    </item>
+    
+    <item>
+      <title>Foo</title>
+      <link>http://localhost:1313/blog/cv/</link>
+      <pubDate>Sat, 24 Feb 2024 14:13:34 +0000</pubDate>
+      
+      <guid>http://localhost:1313/blog/cv/</guid>
+      <description>Resume Profile A results-driven and versatile software engineer. I enjoy tackling a range of problems with a user-focused mindset, all whilst being a collaborative team player.
+Latest Work Findmypast - Jul 2018 to Present Principal Software Engineer
+Collaborated with a remote, distributed team on a family history product featuring billions of searchable records. Obtained back-end and devops expertise as part of cross-functional and self-directed teams. Scaled an entitlements system to 12x live traffic target for the 1921 census release.</description>
     </item>
     
   </channel>
